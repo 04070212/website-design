@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#08080f">
+<meta name="description" content="职场能量罗盘 - 发现你的职场生存模式。24道题，8分钟，找到你在职场中的核心矛盾与应对策略。">
+<meta property="og:title" content="职场能量罗盘 - 发现你的职场生存模式">
+<meta property="og:description" content="24道题测出你的职场生存模式，获得专属行动指南。">
+<meta property="og:type" content="website">
+<title>职场能量罗盘 - 发现你的职场生存模式</title>
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-primary: #0f0f18;
+  --bg-card: #161622;
+  --bg-elevated: #1c1c2e;
+  --accent-cyan: #7cc8d8;
+  --accent-purple: #9b8ec4;
+  --accent-rose: #c9a0b8;
+  --accent-gold: #c9b878;
+  --accent-green: #7eb89e;
+  --accent-coral: #c98080;
+  --gradient-main: linear-gradient(135deg, #9b8ec4, #7cc8d8);
+  --gradient-accent: linear-gradient(135deg, #c9a0b8, #c9b878);
+  --text-primary: #e8e8f0;
+  --text-secondary: #9898b0;
+  --text-muted: #686880;
+  --border-subtle: rgba(155, 142, 196, 0.12);
+  --border-glow: rgba(124, 200, 216, 0.25);
+  --shadow-neon: 0 0 30px rgba(124, 200, 216, 0.12), 0 0 80px rgba(155, 142, 196, 0.06);
+  --shadow-elevated: 0 4px 32px rgba(0, 0, 0, 0.4);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-heading: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+button { font-family: inherit; border: none; cursor: pointer; background: none; color: inherit; -webkit-appearance: none; appearance: none; }
+.report-section * { -webkit-touch-callout: default; user-select: text; }
+
+/* ===== Canvas Background ===== */
+#particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+/* ===== App Container ===== */
+#app { position: relative; z-index: 1; height: 100%; width: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ===== Page Base ===== */
+.page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity 400ms cubic-bezier(0.4,0,0.2,1), transform 400ms cubic-bezier(0.4,0,0.2,1); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.page.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+/* ===== Loading Page ===== */
+#page-loading.active { background: var(--bg-deep); }
+
+/* ===== Start Page — Screen Card ===== */
+#page-start { gap: clamp(12px, 3vh, 24px); }
+.screen-label { font-size: clamp(15px, 3vw, 20px); color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; text-align: center; }
+.screen-card {
+  width: min(82vw, 420px); aspect-ratio: 1 / 1;
+  border-radius: clamp(16px, 3vw, 24px);
+  background: radial-gradient(ellipse at center, rgba(155,142,196,0.06) 0%, rgba(0,0,0,0.3) 100%), var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.screen-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(12px, 2vh, 20px);
+  transition: transform 400ms cubic-bezier(0.4,0,0.2,1), opacity 300ms ease;
+}
+.screen-compass {
+  width: 68%; aspect-ratio: 1 / 1;
+  transition: transform 800ms cubic-bezier(0.25,0.1,0.25,1);
+}
+.screen-compass svg { width: 100%; height: 100%; overflow: visible; }
+.screen-compass .dot-north, .screen-compass .dot-south,
+.screen-compass .dot-east, .screen-compass .dot-west { transition: transform 400ms cubic-bezier(0.25,0.1,0.25,1); }
+
+/* Screen idle animation — slow breathing rotation */
+#page-start.active .screen-compass { animation: compassBreathe 8s ease-in-out infinite; }
+@keyframes compassBreathe {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+/* PLAY button */
+.screen-play {
+  display: flex; align-items: center; gap: 10px;
+  padding: clamp(12px, 2vh, 16px) clamp(28px, 5vw, 40px);
+  border-radius: 50px;
+  font-size: clamp(15px, 2.5vw, 18px); font-weight: 600; color: #fff;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer; transition: all 300ms ease;
+  backdrop-filter: blur(4px);
+}
+.screen-play:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+.screen-play:active { transform: scale(0.96); }
+.play-icon { font-size: clamp(18px, 3vw, 24px); }
+
+/* Screen animations — triggered by JS */
+.screen-compass.spinning { animation: spinFast 0.8s cubic-bezier(0.25,0.1,0.25,1) forwards !important; }
+@keyframes spinFast { 0% { transform: rotate(0deg); } 100% { transform: rotate(720deg); } }
+.screen-compass.converging .dot-north,
+.screen-compass.converging .dot-south,
+.screen-compass.converging .dot-east,
+.screen-compass.converging .dot-west { transform: translate(0, 0) !important; }
+.screen-compass.converging .dot-north { transform: translate(0, 34px) !important; }
+.screen-compass.converging .dot-south { transform: translate(0, -34px) !important; }
+.screen-compass.converging .dot-east { transform: translate(-34px, 0) !important; }
+.screen-compass.converging .dot-west { transform: translate(34px, 0) !important; }
+.screen-inner.burst { transform: scale(20); opacity: 0; transition: transform 500ms cubic-bezier(0.6,0,1,1), opacity 400ms ease; }
+
+.screen-sub { font-size: clamp(13px, 2vw, 15px); color: var(--text-muted); text-align: center; letter-spacing: 1px; }
+/* Staggered fade-in for start page text */
+#page-start .screen-label, #page-start .screen-card, #page-start .screen-sub { opacity: 0; transform: translateY(12px); }
+#page-start.active .screen-label { animation: fadeInUp 500ms ease-out 100ms forwards; }
+#page-start.active .screen-card { animation: fadeInUp 500ms ease-out 250ms forwards; }
+#page-start.active .screen-sub { animation: fadeInUp 500ms ease-out 450ms forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ===== Shared Button Styles ===== */
+.btn-primary { padding: 16px 48px; border-radius: var(--radius-xl); font-size: 17px; font-weight: 600; color: #fff; background: var(--gradient-main); box-shadow: var(--shadow-neon); transition: all 200ms ease; position: relative; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 20px rgba(124,200,216,0.18), 0 0 50px rgba(155,142,196,0.08); }
+.btn-primary:active { transform: scale(0.98); }
+
+/* ===== Quiz Page ===== */
+#page-quiz { justify-content: flex-start; padding-top: 80px; }
+.progress-wrap { width: 100%; max-width: 400px; margin-bottom: 32px; }
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+.progress-track { width: 100%; height: 4px; background: var(--bg-card); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--gradient-main); border-radius: 2px; transition: width 300ms ease; box-shadow: none; }
+.module-indicator { font-size: 12px; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; text-align: center; }
+.question-card { width: 100%; max-width: 460px; animation: slideInRight 350ms ease-out; }
+.question-card.reverse { animation: slideInLeft 350ms ease-out; }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+.question-number { font-size: 13px; color: var(--accent-purple); margin-bottom: 12px; font-weight: 600; }
+.question-text { font-size: 19px; font-weight: 500; line-height: 1.5; margin-bottom: 24px; color: var(--text-primary); }
+.options-grid { display: flex; flex-direction: column; gap: 12px; }
+.option-btn { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-subtle); text-align: left; transition: all 200ms ease; cursor: pointer; min-height: 56px; }
+.option-btn:hover { border-color: rgba(124,200,216,0.4); background: rgba(124,200,216,0.03); }
+.option-btn.selected { border-color: var(--accent-cyan); background: linear-gradient(145deg, rgba(124,200,216,0.08), rgba(155,142,196,0.05)); }
+.option-letter { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--text-muted); transition: all 200ms ease; }
+.option-btn.selected .option-letter { background: var(--accent-cyan); color: #1a1a28; }
+.option-text { font-size: 15px; line-height: 1.6; color: var(--text-secondary); }
+.option-btn.selected .option-text { color: var(--text-primary); }
+.quiz-nav { display: flex; justify-content: space-between; width: 100%; max-width: 460px; margin-top: 24px; gap: 16px; }
+.btn-back, .btn-next { padding: 12px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; transition: all 200ms ease; }
+.btn-back { color: var(--text-muted); border: 1px solid var(--border-subtle); }
+.btn-back:hover { color: var(--text-secondary); border-color: var(--text-muted); }
+.btn-next { color: #fff; background: var(--gradient-main); opacity: 0.4; pointer-events: none; transition: all 200ms ease; }
+.btn-next.enabled { opacity: 1; pointer-events: auto; }
+.btn-next.enabled:hover { background: linear-gradient(135deg, #a99ccf, #8cd2df); }
+
+/* ===== Result Page ===== */
+#page-result { justify-content: flex-start; padding-top: 40px; padding-bottom: 120px; }
+.result-compact { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; }
+.mode-emoji { font-size: 64px; margin-bottom: 12px; animation: floatIn 600ms ease-out; }
+@keyframes floatIn { from { opacity: 0; transform: translateY(20px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.mode-name { font-size: 30px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.mode-name-en { font-size: 14px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 12px; }
+.mode-tagline { font-size: 16px; color: var(--text-secondary); text-align: center; font-style: italic; line-height: 1.5; margin-bottom: 28px; padding: 0 16px; }
+
+/* Dashboard */
+.dashboard { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+.gauge { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.gauge-ring { position: relative; width: 64px; height: 64px; }
+.gauge-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3; }
+.gauge-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 1400ms cubic-bezier(0.4,0,0.2,1); }
+.gauge-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 16px; font-weight: 700; }
+.gauge-label { font-size: 11px; color: var(--text-muted); text-align: center; }
+
+/* Core Contradiction */
+.contradiction-card { width: 100%; padding: 20px; border-radius: var(--radius-lg); background: var(--bg-card); border: 1px solid var(--border-subtle); margin-bottom: 24px; }
+.contradiction-card h4 { font-size: 13px; color: var(--accent-coral); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.contradiction-card p { font-size: 15px; color: var(--text-primary); line-height: 1.6; }
+
+/* Expand Button */
+.btn-expand { width: 100%; padding: 14px; border-radius: var(--radius-md); font-size: 15px; color: var(--accent-cyan); border: 1px solid var(--border-glow); background: rgba(124,200,216,0.05); transition: all 200ms ease; margin-bottom: 24px; }
+.btn-expand:hover { background: rgba(124,200,216,0.1); }
+
+/* Full Report */
+.result-full { width: 100%; max-width: 460px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 600ms cubic-bezier(0.4,0,0.2,1), opacity 400ms ease; }
+.result-full.expanded { max-height: 12000px; opacity: 1; }
+.report-section { margin-bottom: 28px; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-card); border: 1px solid var(--border-subtle); }
+.report-section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); letter-spacing: 0.5px; }
+.report-section h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+.report-section p { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
+.report-section .highlight { color: var(--accent-cyan); }
+.superpower-item, .trap-item, .strategy-item { margin-bottom: 16px; }
+.superpower-item:last-child, .trap-item:last-child, .strategy-item:last-child { margin-bottom: 0; }
+.power-icon, .trap-icon, .strategy-icon { font-size: 20px; margin-right: 6px; }
+.signal-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-top: 6px; background: rgba(201,128,128,0.15); color: var(--accent-coral); }
+.action-tag { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-top: 8px; background: rgba(124,200,216,0.1); color: var(--accent-cyan); }
+.relation-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.relation-table th, .relation-table td { padding: 10px 12px; font-size: 13px; line-height: 1.5; text-align: left; border-bottom: 1px solid var(--border-subtle); }
+.relation-table th { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+.relation-table td { color: var(--text-secondary); }
+
+/* Result Actions */
+.result-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, transparent, var(--bg-deep) 40%); display: flex; gap: 12px; justify-content: center; z-index: 10; max-width: 720px; margin: 0 auto; }
+.btn-secondary { padding: 14px 28px; border-radius: var(--radius-xl); font-size: 15px; font-weight: 500; color: var(--text-secondary); border: 1px solid var(--border-subtle); transition: all 200ms ease; }
+.btn-secondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
+
+/* ===== Mobile ===== */
+@media (max-width: 480px) {
+  .mode-name { font-size: 25px; }
+  .question-text { font-size: 17px; }
+  .option-btn { padding: 14px; min-height: 52px; }
+  .option-text { font-size: 14px; }
+  .dashboard { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .gauge-ring { width: 52px; height: 52px; }
+  .gauge-value { font-size: 14px; }
+  .page { padding: 20px 16px; }
+  #page-quiz { padding-top: 60px; }
+}
+@media (max-width: 360px) {
+  .screen-card { width: 88vw; border-radius: 14px; }
+  .screen-compass { width: 72%; }
+}
+@media (min-width: 768px) {
+  .question-text { font-size: 20px; }
+  .option-text { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+<canvas id="particleCanvas"></canvas>
+<div id="app">
+  <!-- Loading -->
+  <section id="page-loading" class="page active"></section>
+  <!-- Start -->
+  <section id="page-start" class="page">
+    <p class="screen-label">职场能量罗盘</p>
+    <div class="screen-card" id="screenCard">
+      <div class="screen-inner" id="screenInner">
+        <div class="screen-compass" id="screenCompass">
+          <svg viewBox="0 0 200 200">
+            <defs>
+              <radialGradient id="cg" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.06)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient>
+            </defs>
+            <!-- Outer glow ring -->
+            <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(155,142,196,0.06)" stroke-width="0.5"/>
+            <!-- Tick ring: 72 ticks at 5° intervals -->
+            <g id="ticks" stroke="rgba(255,255,255,0.12)" stroke-width="0.4">
+              <g id="tickGroup"></g>
+            </g>
+            <!-- Outer ring -->
+            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.6"/>
+            <!-- Major tick ring (12 ticks at 30°) -->
+            <g id="majorTicks" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"></g>
+            <!-- Mid ring -->
+            <circle cx="100" cy="100" r="78" fill="none" stroke="rgba(124,200,216,0.08)" stroke-width="0.5"/>
+            <!-- Inner ring -->
+            <circle cx="100" cy="100" r="65" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.4"/>
+            <!-- Compass rose: 8-pointed star -->
+            <g stroke="rgba(255,255,255,0.06)" stroke-width="0.4" fill="none">
+              <polygon points="100,12 108,92 188,100 108,108 100,188 92,108 12,100 92,92"/>
+              <polygon points="100,30 104,96 170,100 104,104 100,170 96,104 30,100 96,96" stroke="rgba(255,255,255,0.04)"/>
+            </g>
+            <!-- Cardinal lines -->
+            <g stroke="rgba(255,255,255,0.05)" stroke-width="0.4">
+              <line x1="100" y1="6" x2="100" y2="194"/>
+              <line x1="6" y1="100" x2="194" y2="100"/>
+              <line x1="34" y1="34" x2="166" y2="166"/>
+              <line x1="166" y1="34" x2="34" y2="166"/>
+            </g>
+            <!-- Inner rose ring -->
+            <circle cx="100" cy="100" r="48" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.4"/>
+            <!-- Center hub -->
+            <circle cx="100" cy="100" r="10" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.6"/>
+            <circle cx="100" cy="100" r="6" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+            <circle cx="100" cy="100" r="2.5" fill="rgba(255,255,255,0.25)"/>
+            <!-- Cardinal dots (colored, parallax) -->
+            <circle cx="100" cy="12" r="3.5" fill="#9b8ec4" class="dot-north" data-depth="0.7" style="filter: drop-shadow(0 0 4px rgba(155,142,196,0.5))"/>
+            <circle cx="188" cy="100" r="3.5" fill="#7cc8d8" class="dot-east" data-depth="0.5" style="filter: drop-shadow(0 0 4px rgba(124,200,216,0.5))"/>
+            <circle cx="100" cy="188" r="3.5" fill="#c9a0b8" class="dot-south" data-depth="0.7" style="filter: drop-shadow(0 0 4px rgba(201,160,184,0.5))"/>
+            <circle cx="12" cy="100" r="3.5" fill="#c9b878" class="dot-west" data-depth="0.5" style="filter: drop-shadow(0 0 4px rgba(201,184,120,0.5))"/>
+            <!-- Secondary dots at intercardinal positions -->
+            <circle cx="162" cy="38" r="1.5" fill="rgba(155,142,196,0.5)" data-depth="0.3"/>
+            <circle cx="162" cy="162" r="1.5" fill="rgba(124,200,216,0.5)" data-depth="0.3"/>
+            <circle cx="38" cy="162" r="1.5" fill="rgba(201,160,184,0.5)" data-depth="0.3"/>
+            <circle cx="38" cy="38" r="1.5" fill="rgba(201,184,120,0.5)" data-depth="0.3"/>
+          </svg>
+        </div>
+        <button class="screen-play" id="btnPlay" onclick="startQuiz()">
+          <span class="play-icon">▶</span>
+          <span>开始测评</span>
+        </button>
+      </div>
+    </div>
+    <p class="screen-sub">发现你的职场生存模式</p>
+  </section>
+  <!-- Quiz -->
+  <section id="page-quiz" class="page">
+    <div class="progress-wrap">
+      <div class="progress-info"><span id="progressText">1 / 24</span><span id="moduleLabel" class="module-indicator">模块一：能量来源</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:4.2%"></div></div>
+    </div>
+    <div class="question-card" id="questionCard">
+      <div class="question-number" id="questionNumber">Q1</div>
+      <h3 class="question-text" id="questionText"></h3>
+      <div class="options-grid" id="optionsGrid"></div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-back" id="btnBack" onclick="prevQuestion()">← 上一题</button>
+      <button class="btn-next" id="btnNext" onclick="nextQuestion()">下一题 →</button>
+    </div>
+  </section>
+  <!-- Result -->
+  <section id="page-result" class="page">
+    <div class="result-compact" id="resultCompact"></div>
+    <div class="result-full collapsed" id="resultFull"></div>
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="resetQuiz()">重新测评</button>
+      <button class="btn-primary" onclick="saveResult()">保存结果</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// ==================== DATA ====================
+const QUESTIONS = [
+  // 模块一：能量来源 Q1-Q6 (index 0-5)
+  {id:1, module:1, text:'周一早晨醒来，想到要上班，你的第一反应通常是？', options:[
+    {l:'A', t:'"今天有什么新挑战在等我？"——想到可能的成就感就精神了'},
+    {l:'B', t:'"又要面对那些破事了"——需要做一下心理建设才能起床'},
+    {l:'C', t:'"今天有哪些会议/社交？"——想到要和同事交流，有点期待也有点紧张'},
+    {l:'D', t:'"让我安静地把今天的事做完就好"——最怕突然被打扰'}]},
+  {id:2, module:1, text:'以下哪种情况最让你感到"被掏空"？', options:[
+    {l:'A', t:'努力了很久却没人看到、没人认可'},
+    {l:'B', t:'做的事情毫无意义，纯粹为了做而做'},
+    {l:'C', t:'团队氛围紧张，人际关系让人心累'},
+    {l:'D', t:'被频繁打断，没有整块时间专注做事'}]},
+  {id:3, module:1, text:'当你完成了一个大项目，什么最能让你"回血"？', options:[
+    {l:'A', t:'领导公开表扬、同事的羡慕、朋友圈的点赞'},
+    {l:'B', t:'自己内心知道这件事做得漂亮，有没有人夸不重要'},
+    {l:'C', t:'和团队一起庆祝，感受那种"我们一起做到了"的连接感'},
+    {l:'D', t:'一个人静静待着，给自己一段什么都不做的空白时间'}]},
+  {id:4, module:1, text:'以下哪种描述最接近你对"好工作"的定义？', options:[
+    {l:'A', t:'收入体面、title好听、爸妈在亲戚面前有面子'},
+    {l:'B', t:'做自己真正相信的事情，哪怕收入不是最高的'},
+    {l:'C', t:'同事好相处、领导不PUA、每天上班心情不差'},
+    {l:'D', t:'有足够的自主权，不被人盯着干活'}]},
+  {id:5, module:1, text:'领导当众表扬你时，你的真实感受是？', options:[
+    {l:'A', t:'开心！这是对我价值的确认，我要截图发给朋友/家人'},
+    {l:'B', t:'有点尴尬……我其实更希望私下得到具体的反馈'},
+    {l:'C', t:'松了一口气，说明我最近的人际关系处理得还不错'},
+    {l:'D', t:'好的，然后呢？我更关心下一步该做什么'}]},
+  {id:6, module:1, text:'你更愿意把业余时间花在？', options:[
+    {l:'A', t:'能带来额外收入或社交资本的副业/学习'},
+    {l:'B', t:'纯粹因为热爱而做的事情，哪怕不产生任何经济价值'},
+    {l:'C', t:'和朋友/家人在一起，维护重要的人际关系'},
+    {l:'D', t:'独处、阅读、思考、运动——给自己充电'}]},
+  // 模块二：压力应对 Q7-Q12 (index 6-11)
+  {id:7, module:2, text:'当你发现自己的工作量越来越大、快要扛不住时，你会？', options:[
+    {l:'A', t:'直接找领导谈：要么加人、要么加钱、要么减活'},
+    {l:'B', t:'先自己扛一扛，但如果发现根本性问题，会推动流程优化'},
+    {l:'C', t:'找同事吐槽、寻求情感支持，然后继续扛'},
+    {l:'D', t:'调整自己的节奏，降低标准，能交差就行'}]},
+  {id:8, module:2, text:'公司推出了一个你认为不合理的新政策，你的反应是？', options:[
+    {l:'A', t:'联合同事一起反馈，争取修改'},
+    {l:'B', t:'分析背后的逻辑，看有没有道理，如果没有就提建设性替代方案'},
+    {l:'C', t:'虽然不爽，但会先观察别人怎么反应，不做出头鸟'},
+    {l:'D', t:'心里骂一骂，该干嘛干嘛，政策是公司的事，做好自己是我的事'}]},
+  {id:9, module:2, text:'面对一个非常强势的同事/领导，你的策略是？', options:[
+    {l:'A', t:'正面应对，该争的争，不能输'},
+    {l:'B', t:'用逻辑和数据说话，不卷入情绪对抗'},
+    {l:'C', t:'尽量维持表面和谐，私下再想办法'},
+    {l:'D', t:'避开正面冲突，在自己的领域做好就行'}]},
+  {id:10, module:2, text:'当你感到"卷不动了"，你会？', options:[
+    {l:'A', t:'短暂休息后继续卷——我不能输'},
+    {l:'B', t:'停下来反思：我在卷什么？值得吗？要不要换条路？'},
+    {l:'C', t:'和信得过的朋友/前辈聊聊，看看有没有其他可能性'},
+    {l:'D', t:'降低参与度，做好分内事，把精力留给生活'}]},
+  {id:11, module:2, text:'面对职场中的不确定性（如组织架构调整、裁员传闻），你通常？', options:[
+    {l:'A', t:'主动打探信息、制定Plan B、确保自己处于有利位置'},
+    {l:'B', t:'分析局势、评估影响、思考自己的长期方向是否需要调整'},
+    {l:'C', t:'焦虑但倾向于相信组织/领导会安排好'},
+    {l:'D', t:'做好最坏打算，但也相信不管怎样自己都能应对'}]},
+  {id:12, module:2, text:'以下哪种说法最接近你的"职场生存哲学"？', options:[
+    {l:'A', t:'"进攻是最好的防守"——永远保持竞争力'},
+    {l:'B', t:'"做正确的事，而非容易的事"——哪怕代价更大'},
+    {l:'C', t:'"人脉就是钱脉"——关系到位了，事情就好办'},
+    {l:'D', t:'"流水不争先，争的是滔滔不绝"——长期主义'}]},
+  // 模块三：关系模式 Q13-Q18 (index 12-17)
+  {id:13, module:3, text:'公司团建对你来说是？', options:[
+    {l:'A', t:'展示自己、拓展人脉的好机会'},
+    {l:'B', t:'看情况——有意义的团建可以，纯尬的活动不如不去'},
+    {l:'C', t:'虽然有点累，但也是融入团队的必要社交'},
+    {l:'D', t:'能不去就不去，宁愿一个人待着'}]},
+  {id:14, module:3, text:'同事把不属于你的活推给你，你的反应是？', options:[
+    {l:'A', t:'直接拒绝，或者要求等价交换'},
+    {l:'B', t:'分析是否合理——如果有助于团队目标可以接，但会说明边界'},
+    {l:'C', t:'心里不愿意但不好意思拒绝，先接了再说'},
+    {l:'D', t:'默默接了但以后会注意和这个人保持距离'}]},
+  {id:15, module:3, text:'你对"向上管理"的态度是？', options:[
+    {l:'A', t:'必须的！让领导看到我的价值是职场核心竞争力'},
+    {l:'B', t:'不是拍马屁，而是有效沟通——让领导理解我的工作和需求'},
+    {l:'C', t:'道理都懂，但做起来很别扭，不知道怎么开口'},
+    {l:'D', t:'做好自己的事就行，领导自然能看到'}]},
+  {id:16, module:3, text:'在团队会议中，你通常是？', options:[
+    {l:'A', t:'积极发言的那个人，喜欢主导讨论'},
+    {l:'B', t:'有想法才说，没想法不硬说，但说了就要有质量'},
+    {l:'C', t:'看氛围——如果大家都很积极我就配合，如果很冷我就活跃一下'},
+    {l:'D', t:'尽量不发言，除非被点名'}]},
+  {id:17, module:3, text:'当你和同事产生分歧时，你的第一反应是？', options:[
+    {l:'A', t:'坚持自己的立场，用论据说服对方'},
+    {l:'B', t:'先理解对方的角度，然后寻找共同点'},
+    {l:'C', t:'可能就顺着对方了，关系比事情重要'},
+    {l:'D', t:'回避深入讨论，各做各的就好'}]},
+  {id:18, module:3, text:'以下哪种情况最让你在职场中感到孤独？', options:[
+    {l:'A', t:'没人认可我的贡献，感觉自己在团队中是透明的'},
+    {l:'B', t:'周围人都不理解我为什么这么在意这件事'},
+    {l:'C', t:'团队里没有真正可以交心的人，都是表面客气'},
+    {l:'D', t:'被频繁拉入各种群聊和会议，但没有任何有深度的交流'}]},
+  // 模块四：意义追寻 Q19-Q24 (index 18-23)
+  {id:19, module:4, text:'如果财务自由了，你还会工作吗？', options:[
+    {l:'A', t:'会，但要做得更"高级"——创业、投资、做更有影响力的事'},
+    {l:'B', t:'会，但只做自己真正相信的事情，哪怕很小众'},
+    {l:'C', t:'可能会做一些和人打交道的工作，不一定是为了钱'},
+    {l:'D', t:'可能不会了，或者做一些完全不"卷"的事情，比如开个书店/咖啡馆'}]},
+  {id:20, module:4, text:'你觉得自己五年后最可能在做什么？', options:[
+    {l:'A', t:'在某个领域做到顶尖/管理层，成为别人眼中的成功者'},
+    {l:'B', t:'在做一件自己真正热爱且有意义的事情，无论规模大小'},
+    {l:'C', t:'在一个氛围好的团队里，做着还算喜欢的工作，生活工作平衡'},
+    {l:'D', t:'说实话不太确定，但希望比现在更自由、更从容'}]},
+  {id:21, module:4, text:'你对AI取代工作的态度是？', options:[
+    {l:'A', t:'焦虑但有行动——我在学习AI工具，确保自己不被淘汰'},
+    {l:'B', t:'思考什么是我独有的、AI替代不了的价值，并朝那个方向深耕'},
+    {l:'C', t:'担心，但相信人际关系和情感连接是AI做不到的'},
+    {l:'D', t:'顺其自然，该来的总会来，做好眼前事'}]},
+  {id:22, module:4, text:'以下哪种情况最容易让你考虑离职？', options:[
+    {l:'A', t:'薪资/职级长期没有提升，感觉自己"亏了"'},
+    {l:'B', t:'做的事情和自己价值观冲突，每天都在消耗自己'},
+    {l:'C', t:'团队氛围toxic，每天上班像上刑'},
+    {l:'D', t:'完全没有成长空间，每天都在重复，脑子快生锈了'}]},
+  {id:23, module:4, text:'你理想中的"成功"更接近以下哪种？', options:[
+    {l:'A', t:'行业内有影响力、收入体面、被社会认可'},
+    {l:'B', t:'忠于自己的价值观，做的事情经得起时间考验'},
+    {l:'C', t:'有一群志同道合的人一起做有意义的事'},
+    {l:'D', t:'内心平静自洽，不被外界的评价左右'}]},
+  {id:24, module:4, text:'如果用一个词描述你当前职场状态的核心矛盾，最接近的是？', options:[
+    {l:'A', t:'"卷还是不卷"——想赢但怕累'},
+    {l:'B', t:'"坚持还是放弃"——有意义但很苦'},
+    {l:'C', t:'"迎合还是做自己"——想融入但不想伪装'},
+    {l:'D', t:'"加速还是减速"——想成长但不想被掏空'}]}
+];
+
+const MODES = {
+  A1:{key:'A1',name:'开拓者',nameEn:'The Trailblazer',emoji:'🔥',quadrant:'I',tagline:'"我要在职场丛林中杀出一条路"',
+    profile:'你是一个外在驱动+主动建构的职场人。你的引擎由外部世界的信号驱动——认可、排名、晋升、收入、影响力。你是团队里那个永远盯着目标、永远在问"下一个是什么"的人。你对竞争不恐惧——你甚至有点享受竞争，因为它让你感到自己活着。优势场景：销售攻坚、业绩冲刺、危机处理、需要有人站出来"扛旗"的局面。',
+    superpowers:[
+      {icon:'🏆',title:'目标狙击手',desc:'一旦有了清晰的目标，你就是团队里最能打的那个。你不纠结、不内耗、不犹豫——干就完了。',scene:'季度末冲业绩，所有人都累了，你反而越冲越兴奋，最后一刻拿下关键客户。'},
+      {icon:'📢',title:'自我品牌官',desc:'你天然懂得"让价值被看见"。你不会觉得展示成果是"不好意思"的事，因为你认为：做得好就应该被看到。',scene:'年终述职时，你的PPT是全场最有故事线的——有数据、有战功、有高光时刻。'},
+      {icon:'💪',title:'抗压引擎',desc:'压力对你来说不是阻碍，是燃料。别人在压力下退缩，你在压力下反而更清醒、更果断。',scene:'项目出危机时，你是那个能稳住局面、快速拍板的人，团队跟着你反而安心了。'}],
+    traps:[
+      {icon:'🎢',title:'奖赏依赖症',signal:'如果没有明确的奖励（升职、加薪、表扬），你对同一件事的动力会断崖式下降。',consequence:'你可能在需要长期深耕但短期看不到回报的领域提前退出，错失更大的机会。',warning:'你发现自己在想"这事对我有什么好处？"的频率越来越高。'},
+      {icon:'🏃',title:'永动机型过载',signal:'你不敢停下来，因为停下来就意味着"落后"。你的日历永远排满。',consequence:'Burnout不是会不会来的问题，而是什么时候来的问题。',warning:'你开始失眠、易怒、对曾经热爱的事情也提不起兴趣。'},
+      {icon:'👑',title:'孤家寡人陷阱',signal:'你在竞争中赢得太多，以至于同事开始把你当对手而非伙伴。',consequence:'当你真正需要支持时，发现身边没有人。',warning:'庆功宴上大家都在，但没人真正和你聊心里话。'}],
+    contradiction:'"赢了比赛，但这是我想赢的比赛吗？"——你擅长"赢"，但不一定擅长"选择赢什么"。',
+    strategies:[
+      {icon:'🎯',title:'重新定义"赢"',content:'拿出一张纸，左边写"社会定义的成功"，右边写"如果没有任何人在乎，我依然想做的事"。看看右边写了什么。',action:'每天睡前问自己："今天有没有一件事，我做的时候完全忘了它有什么用，只是纯粹享受？"'},
+      {icon:'🧘',title:'刻意练习"无目标时间"',content:'每周留出半天时间，不做任何有明确目标的事——散步、发呆、和朋友漫无目的地聊天。',action:'在日历上锁定一个2小时的空白时段，标签写"什么都不做"。'},
+      {icon:'🤝',title:'把"对手"变成"队友"',content:'有意识地去帮助一个"对你没有直接利用价值"的人——不是为了人脉，而是为了练习一种新的关系模式。',action:'找一个团队里你平时不太关注的人，主动提供一次帮助，不期待任何回报。'}],
+    relationships:[
+      {mode:'🌊 变革者',friction:'你觉得TA太理想主义、不够务实；TA觉得你太功利',advice:'让TA帮你思考"为什么要赢"；你帮TA把理想落地为可执行的目标'},
+      {mode:'🧘 修行者',friction:'你觉得TA太佛系、没有冲劲；TA觉得你太躁',advice:'从TA身上学习"不需要外部认可也能自洽"的能力'},
+      {mode:'🎭 变色龙',friction:'你觉得TA没有立场、见风使舵；TA觉得你太刚',advice:'TA的灵活性能帮你打开你注意不到的局面'}],
+    dashboard:{drive:90,stress:80,relation:50,meaning:40},energyTip:'你的动力和压力双高，像一辆油门踩到底但刹车片快磨光的车。本周至少做一件"没有目的"的事。'},
+  A2:{key:'A2',name:'变革者',nameEn:'The Changemaker',emoji:'🌊',quadrant:'II',tagline:'"我要让事情变得更好，哪怕推倒重来"',
+    profile:'你是一个内在驱动+主动建构的职场人。你的能量来自内心深处的价值判断——当你看到不合理、不高效、不正义的事情时，你不是默默忍受，而是想要做点什么。你是团队里那个会说"我们为什么要这样做？有没有更好的方式？"的人。你不太在乎办公室政治，也不太擅长"来事"，但你在乎事情本身对不对、好不好。优势场景：产品迭代、流程优化、组织变革、从0到1的创新项目。',
+    superpowers:[
+      {icon:'🔍',title:'问题雷达',desc:'你有一种敏锐的嗅觉，能在别人觉得"还行"的地方发现可以优化的空间。',scene:'一个新流程上线三天，你已经发现了三个可以改进的点，而其他人还在适应中。'},
+      {icon:'🛠️',title:'建设性不服从',desc:'你不是为反而反，你是"带着替代方案说不"的人。',scene:'领导提出了一个你觉得不合理的deadline，你没有直接拒绝，而是拿出了三种调整方案。'},
+      {icon:'🔥',title:'意义点燃器',desc:'你对"为什么做这件事"的执着，会感染身边的人。',scene:'团队对项目方向感到迷茫时，你站起来说"我们做这件事是因为……"，让大家都重新找到了动力。'}],
+    traps:[
+      {icon:'⚡',title:'完美主义瘫痪',signal:'当一个方案不是100%满意时，你宁愿不交也不愿交一个"还行"的版本。',consequence:'你可能被认为"执行力不够"，而实际上你是想太多了。',warning:'你已经改了第三版，但觉得"还是不对"，而deadline是昨天。'},
+      {icon:'🦔',title:'刺猬模式',signal:'当你的建议被多次驳回或忽视后，你开始变得防御和尖锐。',consequence:'你可能真的变成了别人眼中的"刺头"，形成恶性循环。',warning:'你发现自己最近在会议上说的话，都是以"不是，我的意思是……"开头。'},
+      {icon:'🌪️',title:'孤独革命家',signal:'你相信"我一个人也能改变"，不愿意花时间建立同盟。',consequence:'你的好想法因为没有足够的支持而无法落地。',warning:'你的方案被通过后，发现没有人真正愿意配合执行。'}],
+    contradiction:'"有意义的事很难做 vs 容易做的事没意义"——你在追求"做正确的事"，但职场有时候更奖励"做容易的事"。',
+    strategies:[
+      {icon:'🎯',title:'找到你的"最小可行变革"',content:'不要试图一次性改变整个系统。找到一个小到没人会拒绝、但效果又足以被看到的切入点。',action:'列出你当前最想改变的3件事，问自己：哪一件可以拆出一个"三天内能做完、做完就能看到效果"的子任务？'},
+      {icon:'🤝',title:'建立"变革同盟"',content:'在推动变革之前，先找到2-3个可能支持你的人，私下和他们聊聊。',action:'找一位你信任的同事喝咖啡，只问一个问题："你最近工作中最头疼的是什么？"'},
+      {icon:'🧘',title:'区分"放弃"与"战略性等待"',content:'有些想法现在做不了，不是因为它不好，而是因为时机不到。',action:'创建一个"未来变革清单"，设定3个月后的提醒来重新审视。'}],
+    relationships:[
+      {mode:'🤝 连接者',friction:'你觉得TA太"和稀泥"；TA觉得你太"刚"',advice:'借TA的人际敏感度来软性推动变革；用你的清晰逻辑帮TA坚定立场'},
+      {mode:'⚡ 冲刺者',friction:'你觉得TA浅；TA觉得你慢',advice:'让TA帮你快速验证想法；你帮TA在执行前多想一步'},
+      {mode:'🛡️ 守夜人',friction:'你觉得TA保守；TA觉得你冒险',advice:'尊重TA对风险的敏感——TA的"不行"里往往有重要信息'}],
+    dashboard:{drive:80,stress:60,relation:40,meaning:90},energyTip:'你的意义感很高，但关系值是短板。每两周刻意做一次"关系存款"。'},
+  B1:{key:'B1',name:'连接者',nameEn:'The Connector',emoji:'🤝',quadrant:'III',tagline:'"关系是我的安全网，和谐是我的充电站"',
+    profile:'你是一个外在驱动+适应调谐的职场人。你的能量来自人与人之间的连接。被接纳、被喜欢、被需要——这些对你来说不是"加分项"，而是"基本需求"。你是团队里的粘合剂，是那个能感觉到"会议室气氛不对"并默默调节的人。你擅长跨部门协调，因为你在乎每个人的感受，大家也愿意给你面子。优势场景：团队协作、跨部门沟通、客户关系维护、需要共情力的岗位。',
+    superpowers:[
+      {icon:'🕊️',title:'氛围调温器',desc:'你能精准感知团队的情绪温度，并在冲突升级前悄无声息地降温。',scene:'两个部门在为一个需求扯皮，你没有站队，而是分别理解了双方的痛点，找到一个中间方案。'},
+      {icon:'🫂',title:'信任银行家',desc:'你擅长在日常工作中不断积累信任。当你需要推动一件事时，大家帮你是因为"你平时帮过我"。',scene:'你需要一个紧急配合，打了三个电话，三个人都愿意为你加班。'},
+      {icon:'🌉',title:'翻译官',desc:'你能把技术语言翻译成业务语言，把领导的意思翻译成团队能接受的表达。',scene:'技术说"做不了"，你帮他们翻译成"在现有资源下需要调整优先级"，业务方理解了。'}],
+    traps:[
+      {icon:'🫠',title:'讨好型内耗',signal:'你说"好的"的速度比思考"我能不能做"的速度快得多。',consequence:'你的工作量越来越大，但其中很大一部分不是你该做的。',warning:'你发现自己在周末想起下周的社交日程时感到生理性的疲惫。'},
+      {icon:'🎭',title:'面具疲劳',signal:'你在不同人面前切换不同模式，回到家后一句话都不想说。',consequence:'你给了所有人温暖，但没人给你充电。',warning:'你发现自己越来越频繁地取消朋友聚会，因为"不想再说话了"。'},
+      {icon:'🪞',title:'镜子依赖症',signal:'你需要通过别人的反应来确认自己的价值。',consequence:'你的自我价值感像股票K线一样随别人的态度波动。',warning:'领导一天没回你消息，你已经脑补了三种"我是不是得罪TA了"的剧情。'}],
+    contradiction:'"想让所有人满意，但谁来让我满意？"——你擅长照顾别人，但不擅长照顾自己。',
+    strategies:[
+      {icon:'🛑',title:'安装"24小时延迟芯片"',content:'当有人对你提出请求时，不要当场答应。练习说："让我看一下日程，明天回复你。"',action:'下一次有人对你提出额外请求时，用上述话术回应，真正花10分钟评估。'},
+      {icon:'💬',title:'练习"温和的拒绝"三句式',content:'①感谢/认可 + ②事实/边界 + ③替代方案。',action:'找一个安全的场景，练习一次"温和的拒绝"。'},
+      {icon:'🪴',title:'每周"ME TIME"',content:'每周留一块"不需要取悦任何人"的时间，只做让自己开心的事。',action:'在日历上锁定一个"ME TIME"时段，做一件纯粹为自己做的事。'}],
+    relationships:[
+      {mode:'🔥 开拓者',friction:'你觉得TA太冷酷、不照顾别人感受；TA觉得你太软',advice:'你的关系网络是TA最缺的资源；TA的果断能帮你做出"得罪人"的决定'},
+      {mode:'🛡️ 守夜人',friction:'你觉得TA太死板；TA觉得你太没原则',advice:'你帮TA理解"规则之外的人情"；TA帮你建立"边界之内不可退让"的底线'},
+      {mode:'⚡ 冲刺者',friction:'你觉得TA太急、不考虑人的因素；TA觉得你太磨叽',advice:'你帮TA在执行前做好"人的准备"；TA帮你在犹豫时快速行动'}],
+    dashboard:{drive:60,stress:75,relation:95,meaning:50},energyTip:'你的关系值是双刃剑——它既是你的超能力来源，也是你的能量黑洞。本周做一件"只为自己做、不需要告诉任何人"的事。'},
+  B2:{key:'B2',name:'修行者',nameEn:'The Practitioner',emoji:'🧘',quadrant:'IV',tagline:'"我在内心修篱种菊，职场只是修行场"',
+    profile:'你是一个内在驱动+适应调谐的职场人。你的能量不需要外部世界来充值——你自己就是自己的充电站。你对专业有洁癖，对深度有执念，对表面的热闹有天然的免疫力。你是团队里那个不太说话但总能交付高质量工作的人。你不追求"被看见"，你追求"做得好"。优势场景：需要深度专注的技术/研究岗位、需要长期积累的专业领域、知识沉淀和体系化建设。',
+    superpowers:[
+      {icon:'🧠',title:'深度处理器',desc:'当别人在快速浏览、浅层理解时，你在深入消化、系统思考。你的产出不一定最快，但往往最经得起推敲。',scene:'头脑风暴产生了20个想法，散会后你花两小时把它们整理成逻辑清晰、可执行的框架。'},
+      {icon:'🎯',title:'专注力护盾',desc:'你对干扰有天然的抵抗力。在开放式办公室里，你是那个戴上耳机就能进入"心流"的人。',scene:'周五下午办公室已经开始躁动，你依然在安静地完成那个需要高度集中注意力的分析报告。'},
+      {icon:'🪨',title:'情绪稳定器',desc:'你不会因为领导的情绪波动而波动，不会因为同事的焦虑而焦虑。',scene:'项目出了意外，所有人都在慌乱，你是那个说"等一下，我们先搞清楚到底发生了什么"的人。'}],
+    traps:[
+      {icon:'🫥',title:'隐形人困境',signal:'你做得很好，但年终评审时发现领导对你的工作内容知之甚少。',consequence:'你的专业价值与你的职场回报之间出现了不应该存在的gap。',warning:'你发现比你晚来但更会"展示"的同事先升职了。'},
+      {icon:'🏝️',title:'舒适区孤岛',signal:'你越来越习惯一个人工作，对团队活动、跨部门合作越来越回避。',consequence:'你的专业深度在增加，但你的影响力半径在缩小。',warning:'你最近一个月没有主动和任何同事进行非工作话题的交流。'},
+      {icon:'🔇',title:'沉默的傲慢',signal:'你对"不够专业"的意见有内心的不屑，虽然不会说出来。',consequence:'你可能被误解为"不合群""不配合"。',warning:'你发现在会议上你越来越少发言，不是因为没想法，而是因为"说了他们也听不懂"。'}],
+    contradiction:'"做得好就够了，还是做得好也要被看到？"——你相信专业本身会说话，但职场有时候更需要"翻译"。',
+    strategies:[
+      {icon:'📝',title:'建立"价值可见度"系统',content:'用你擅长的方式——写作。每完成一个重要工作，写一份简短的三段式总结。',action:'回顾过去一个月的工作，写一份"月度价值简报"发给直属领导。'},
+      {icon:'🎙️',title:'找到一个"最小展示单元"',content:'每次会议至少发言一次。可以是一个问题、一个补充、一个确认。',action:'在下一次团队会议上，至少说一句话。如果紧张，提前准备好这句话。'},
+      {icon:'🌉',title:'建立"专业翻译"能力',content:'练习把复杂的事情用比喻、故事、类比讲清楚。这不是"降低水准"，这是"扩大影响力"。',action:'选一个你最近做的专业工作，尝试用"完全不懂这行的人也能听懂"的方式解释。'}],
+    relationships:[
+      {mode:'🔥 开拓者',friction:'你觉得TA太浮夸；TA觉得你太闷',advice:'借TA的展示力让你的成果被看到；用你的深度帮TA"兜得住"'},
+      {mode:'🤝 连接者',friction:'你觉得TA太吵；TA觉得你太冷',advice:'TA是你在组织中的"天线"；你是TA的"锚"'},
+      {mode:'🌱 培育者',friction:'你们互相欣赏但都偏内敛',advice:'你们是天然的深度搭档——你负责"深"，TA负责"广"'}],
+    dashboard:{drive:70,stress:50,relation:30,meaning:80},energyTip:'你的意义感和专业深度很强，但关系值过低会反过来限制你的专业价值发挥。本周在团队群里分享一篇你觉得有价值的文章。'},
+  C1:{key:'C1',name:'冲刺者',nameEn:'The Sprinter',emoji:'⚡',quadrant:'I',tagline:'"给我一个deadline，我还你一个奇迹"',
+    profile:'你是一个外在驱动+主动建构（偏执行）的职场人。你的能量模式像一个短跑运动员——需要明确的目标、清晰的终点线、即时的反馈。你是团队里的"救火队员"，是那个在最后一刻能力挽狂澜的人。你喜欢"搞定"的快感——划掉待办事项的那一刻，是你一天中的高光时刻。优势场景：项目攻坚、紧急交付、多任务并行、创业公司的早期阶段。',
+    superpowers:[
+      {icon:'⚡',title:'闪电执行力',desc:'从想法到行动，你的距离比任何人都短。当别人还在讨论"要不要做"时，你已经做出了一个初版。',scene:'领导周五下午丢了一个需求说"下周给我就行"，你周一早上已经把完整方案放在TA桌上了。'},
+      {icon:'🔥',title:'危机兴奋感',desc:'你在压力下不是被压垮，而是被激活。越是紧急的情况，你的思路越清晰、动作越快。',scene:'上线前夜发现一个严重bug，所有人都在慌，你已经拉了一个临时群、分配了任务、开始排查。'},
+      {icon:'🔀',title:'多线程处理器',desc:'你能在多个任务之间快速切换而不失效率。',scene:'同时跟进三个项目，每个项目都有不同的stakeholder和deadline，你依然能井井有条。'}],
+    traps:[
+      {icon:'🐇',title:'冲刺-崩溃循环',signal:'你的工作节奏是"疯狂冲刺→彻底瘫倒→疯狂冲刺"。',consequence:'这种波动的能量模式不可持续，长期会损害健康和工作质量。',warning:'你已经连续三个月处于"要么在冲刺，要么在恢复"的状态。'},
+      {icon:'🕳️',title:'深度缺失症',signal:'你完成了大量任务，但回头看，没有一件是你觉得"真正做透了"的。',consequence:'在30岁左右，"做得快"的边际价值递减，而"做得深"的价值递增。',warning:'面试时被问到"哪个项目真正体现了你的专业深度"时，你犹豫了。'},
+      {icon:'🎯',title:'目标失联焦虑',signal:'当没有明确的deadline或KPI时，你感到迷失。',consequence:'你容易被短期目标驱动着做了一堆事，但这些事之间没有一条主线。',warning:'你的职业路径像是一个个孤立的项目，而非一条持续向上的曲线。'}],
+    contradiction:'"做得多 vs 做得深——我要不要慢下来？"——真正让你成长的东西往往发生在"不忙的时候"。',
+    strategies:[
+      {icon:'🏃',title:'把马拉松拆成一系列冲刺',content:'把一个长期目标拆成一系列短期里程碑，每个里程碑都有明确的deadline和可交付成果。',action:'选一个你一直在拖延的长期任务，把它拆成3-5个"一周内可完成"的子任务。'},
+      {icon:'🧊',title:'刻意安排"深度时间"',content:'每周至少留出两个2小时的"深度时间"——关掉通知、不查消息、只做一件事。',action:'在日历上锁定两个"深度时间"块，选一个需要持续专注的工作。'},
+      {icon:'🗺️',title:'每季度做一次"方向校准"',content:'试着每季度停下来问自己：过去三个月做的事情，是在朝我想要的方向走吗？',action:'画一条线，左边写"过去三个月做了什么"，右边写"这些事情让我离什么更近了？"'}],
+    relationships:[
+      {mode:'🧘 修行者',friction:'你觉得TA太慢；TA觉得你太浅',advice:'你帮TA把深度思考变成可执行的行动；TA帮你在行动前多想一步'},
+      {mode:'🌊 变革者',friction:'你觉得TA想太多；TA觉得你不想就干',advice:'TA帮你思考"为什么要做"；你帮TA快速落地验证'},
+      {mode:'🌱 培育者',friction:'你觉得TA太磨叽；TA觉得你太急功近利',advice:'TA帮你看到"做完之后还要做什么"；你帮TA在需要快速出结果时提速'}],
+    dashboard:{drive:95,stress:85,relation:40,meaning:35},energyTip:'你是八种模式中能量波动最大的一种。本周做一件"没有deadline但你觉得有意义"的事。'},
+  C2:{key:'C2',name:'守夜人',nameEn:"The Night's Watch",emoji:'🛡️',quadrant:'IV',tagline:'"我守住底线，在规则中找到自由"',
+    profile:'你是一个内在驱动+适应调谐（偏坚守）的职场人。你的力量来自责任感、秩序感和对底线的坚守。你不是团队里最亮眼的人，但你可能是最可靠的人。当别人在追逐风口时，你在维护根基；当别人在试错创新时，你在守住底线。在一个越来越浮躁的职场里，你的稳定性和可靠性正在成为越来越稀缺的资产。优势场景：风险管理、合规审计、质量控制、系统运维、成熟组织的核心业务维护。',
+    superpowers:[
+      {icon:'🏰',title:'底线守卫者',desc:'你能看到别人看不到的风险。当所有人都在为"能做什么"兴奋时，你在冷静地思考"什么不能做"。',scene:'团队准备上线一个新功能，你发现了合规风险点并及时预警，避免了一次重大事故。'},
+      {icon:'📋',title:'秩序建筑师',desc:'你擅长在混沌中建立秩序。你建的体系，让团队跑得更稳。',scene:'接手一个交接混乱的项目后，用一周时间整理了文档体系、建立了流程规范，效率提升了30%。'},
+      {icon:'⚓',title:'风暴中的压舱石',desc:'当组织经历变动时，你是团队中最稳定的那个。你不会被恐慌情绪裹挟。',scene:'公司宣布重组，所有人都在焦虑，你安静地完成了当周的工作，还帮同事梳理了新架构下的对接方案。'}],
+    traps:[
+      {icon:'🏛️',title:'堡垒综合征',signal:'你把"守住底线"变成了"拒绝一切变化"。任何新的、不确定的东西都被你视为威胁。',consequence:'你可能被贴上"老顽固"的标签，在组织需要转型时成为"被优化"的对象。',warning:'你最近三次团队讨论中，你说的最多的词是"不行""风险太大""以前不是这样的"。'},
+      {icon:'🫥',title:'隐形价值困境',signal:'你做的事情在"没出事的时候"看起来像是什么都没做。',consequence:'你可能做了最多的事，拿了最少的认可。',warning:'年终评审时，你不知道怎么写"亮点"——因为你的工作亮点是"没有事故发生"。'},
+      {icon:'🔒',title:'舒适区硬化',signal:'你在自己熟悉的领域越来越舒服，越来越不愿意碰不熟悉的东西。',consequence:'在技术迭代加速的时代，"不变"本身就是一个风险。',warning:'你已经超过一年没有学习一项新技能或接触一个新领域了。'}],
+    contradiction:'"守得住 vs 变得了——稳定是资产还是负债？"——你的稳定性和可靠性值钱，但前提是你守护的是"还有人在用的城"。',
+    strategies:[
+      {icon:'📊',title:'量化你的"隐形价值"',content:'记录你预防了哪些风险、建立的流程节省了多少时间、维护的系统避免了多少损失。',action:'列一个"隐形贡献清单"——过去三个月你做的哪些事如果没有做，团队会付出什么代价？'},
+      {icon:'🚪',title:'每季度推开一扇"新门"',content:'每季度选一个小方向——新工具、新领域、新协作方式——花10小时去了解。',action:'选一个你一直好奇但没碰过的领域，找一个入门教程，本周花2小时学习。'},
+      {icon:'🗣️',title:'从"沉默的守护者"到"可见的专家"',content:'尝试在团队中分享你的"避坑指南"。',action:'写一篇内部文档——"我在XX领域踩过的5个坑以及如何避开它们"，分享给团队。'}],
+    relationships:[
+      {mode:'🌊 变革者',friction:'你觉得TA太冒险；TA觉得你太保守',advice:'你是TA最好的"风控官"；TA是你最好的"破窗器"'},
+      {mode:'🤝 连接者',friction:'你觉得TA太没原则；TA觉得你太死板',advice:'TA帮你把价值用"人话"讲给更多人听；你帮TA找到可以坚持的底线'},
+      {mode:'🎭 变色龙',friction:'你觉得TA没有立场；TA觉得你太僵硬',advice:'TA的灵活性是你需要学习的"软技能"；你的坚定性是TA可以锚定的坐标'}],
+    dashboard:{drive:55,stress:40,relation:30,meaning:70},energyTip:'你的稳定性是八种模式中最强的资产。本周做一件"小小的出格"——尝试一种新的工作方式。'},
+  D1:{key:'D1',name:'变色龙',nameEn:'The Chameleon',emoji:'🎭',quadrant:'III',tagline:'"我能在任何环境中找到生存之道"',
+    profile:'你是一个外在驱动+适应调谐（偏灵活）的职场人。你的核心能力是"弹性"——你能根据不同的环境、不同的人、不同的需求，灵活切换你的角色和行为模式。你是团队里的"万金油"，什么都能做一点，哪里需要就能补哪里。你的生存策略不是"深耕一个领域"，而是"保持足够广泛的适应性"。优势场景：初创公司多面手、需要同时对接多部门的岗位、快速变化的行业。',
+    superpowers:[
+      {icon:'🦎',title:'环境适配器',desc:'你能在截然不同的团队文化、领导风格和工作模式之间无缝切换。',scene:'从一个流程严谨的大公司跳到一个野蛮生长的创业公司，别人需要三个月适应，你三周就找到了新节奏。'},
+      {icon:'🎯',title:'需求翻译器',desc:'你能快速理解不同stakeholder的真实需求——不是他们说了什么，而是他们想要什么。',scene:'业务方说"我要一个报表"，技术方说"需求不明确做不了"，你在中间翻译了一下，发现业务方其实想要的是"每周自动收到三个关键指标的更新"。'},
+      {icon:'🧩',title:'万能补位',desc:'你有一种独特的安全感：你相信"不管发生什么，我都能应对"。',scene:'团队有人突然离职，你临时接下了TA的工作，一边学一边做，一个月内把缺口补上了。'}],
+    traps:[
+      {icon:'🪞',title:'镜像疲劳',signal:'你发现自己在不同人面前说的话、用的语气、表达的观点都不一样。',consequence:'长期的角色切换会消耗大量心理能量，你可能会在某天突然感到一种深层的疲惫。',warning:'当有人问你"你自己到底怎么想的"时，你发现你需要想一下才能回答。'},
+      {icon:'🌊',title:'无锚漂流',signal:'因为你能适应很多领域，所以你很难选择"深耕哪一个"。',consequence:'在职业生涯中期，"什么都能做"会变成"什么都不精"。',warning:'你的技能图谱很宽，但没有一项技能你能自信地说"在这个领域，我是前10%"。'},
+      {icon:'🤹',title:'过度适应',signal:'你太擅长适应了，以至于你适应了一个其实不适合你的环境。',consequence:'你的适应力让你"能在任何地方生存"，但也让你"在任何地方都能忍受"。',warning:'你发现自己已经在一份"还行但没什么热情"的工作上待了两年以上，理由是"习惯了"。'}],
+    contradiction:'"我适应了一切，但我到底想要什么？"——你的优势（灵活适应）同时也是你的诅咒（难以锚定）。',
+    strategies:[
+      {icon:'⚓',title:'找到你的"不妥协清单"',content:'列出什么事情不管环境怎么变你都不想妥协。不是"不能"妥协，而是"不想"妥协。',action:'写下3件"无论换什么工作、什么环境，我都不想妥协"的事。问自己：现在的工作有没有在侵蚀其中任何一件？'},
+      {icon:'🎯',title:'选定1-2个"深耕区"',content:'在广度的基础上，选1-2个领域进行"有意识的深耕"。',action:'列出你目前涉猎的所有领域，问自己：如果只能选一个领域，在未来两年把它做到前20%，我会选哪一个？'},
+      {icon:'🛑',title:'练习"不适感耐受"',content:'当你在一个场景中感到不适时，不要马上适应，而是停下来感受。',action:'下一次感到"有点别扭但说不上来哪里不对"时，花10分钟写下你的感受。'}],
+    relationships:[
+      {mode:'🛡️ 守夜人',friction:'你觉得TA太僵硬；TA觉得你太没立场',advice:'TA的坚定性能帮你在迷雾中找到锚点；你的灵活性帮TA看到更多选项'},
+      {mode:'🔥 开拓者',friction:'你觉得TA太强势；TA觉得你太善变',advice:'TA帮你在需要时做出果断选择；你帮TA看到"赢"之外的更多可能性'},
+      {mode:'🌱 培育者',friction:'你觉得TA太慢；TA觉得你太飘',advice:'TA帮你看到"深耕"的价值；你帮TA在需要灵活应对时跳出固有节奏'}],
+    dashboard:{drive:60,stress:60,relation:80,meaning:35},energyTip:'你是八种模式中最灵活的一种，也是最容易"丢失自己"的一种。本周在一个你通常"配合别人"的场景中，主动说出你真实的想法。'},
+  D2:{key:'D2',name:'培育者',nameEn:'The Cultivator',emoji:'🌱',quadrant:'II',tagline:'"我种下一颗种子，等它慢慢长大"',
+    profile:'你是一个内在驱动+主动建构（偏长期）的职场人。你的时间尺度和别人不一样。当别人在追逐季度目标时，你在思考三年后的事情；当别人在"优化简历"时，你在"构建体系"。你是团队里那个愿意花时间带新人、沉淀方法论、搭建基础设施的人。优势场景：人才培养与团队建设、知识体系搭建、长期产品规划、教育/咨询/研究类岗位。',
+    superpowers:[
+      {icon:'🌳',title:'长期主义视角',desc:'你能看到别人看不到的"时间复利"。你做决策的时间跨度不是周或月，而是年。',scene:'当所有人都建议追一个短期风口时，你坚持投入一个"现在没人在意但两年后会爆发"的方向。'},
+      {icon:'🌱',title:'人才培育力',desc:'你有一种天然的"教练"本能——你享受看到别人因为你而成长。',scene:'你带的新人在一年后独当一面，在会议上提出了一个你都没想过的好点子。你没有觉得被威胁，而是觉得"这太好了"。'},
+      {icon:'🧱',title:'体系构建力',desc:'你不满足于"把一件事做完"，你会在做完之后想"怎么让下一次做得更顺"。',scene:'你花了两周时间搭建了一个自动化工作流，前一周大家都在抱怨你"花太多时间"，后一周所有人都在用。'}],
+    traps:[
+      {icon:'🐢',title:'慢动作困境',signal:'你在"准备"上花了太多时间，以至于错过了行动的最佳窗口期。',consequence:'你可能被贴上"行动力不足"的标签。长期主义从"战略定力"变成了"拖延的借口"。',warning:'你有一个想法已经超过三个月了，每次别人问进展，你都说"还在打磨"。'},
+      {icon:'🌲',title:'森林迷路症',signal:'你太关注"长远"了，以至于忽略了眼前的信号。',consequence:'你可能在一个已经不再重要的方向上进行长期投入。',warning:'你最近一次重新审视你的"三年规划"是什么时候？如果超过半年没调整过，可能已经过时了。'},
+      {icon:'🫠',title:'不被理解的孤独',signal:'你做的事情，在当下很难向别人解释其价值。',consequence:'长期缺乏正反馈可能导致动力枯竭。你可能在"快要见到成果"的前夜放弃。',warning:'你已经连续几个月感觉"我做的事没有人理解也没有人认可"。'}],
+    contradiction:'"我在种树，但别人都在收割——我还要坚持吗？"——你需要的不是放弃长期主义，而是学会在长期路径上设置阶段性里程碑。',
+    strategies:[
+      {icon:'📸',title:'设置"阶段性曝光"',content:'树发芽了、长叶子了、长高了——每一个阶段都值得被记录和分享。',action:'如果你正在做一个长期项目，写一份"本月成长简报"发给领导和相关同事。'},
+      {icon:'🎯',title:'在长期路径上设置"短期里程碑"',content:'为你的长期目标设置每季度/每月的里程碑。目的不是"快速出结果"，而是"确认你还在正确的方向上"。',action:'把你的"三年目标"倒推，设定未来三个月的3个关键里程碑。'},
+      {icon:'🗣️',title:'学会"翻译"你的价值',content:'"我在搭建知识体系"不如"我在做一件事，做完之后新人的上手时间会从三个月缩短到两周"。',action:'用一句话说清楚你正在做的"长期投入"对团队的"短期影响"是什么。'}],
+    relationships:[
+      {mode:'⚡ 冲刺者',friction:'你觉得TA太急功近利；TA觉得你太磨叽',advice:'你们是完美的互补组合——你帮TA看清方向；TA帮你在"想太多"时快速行动'},
+      {mode:'🧘 修行者',friction:'你们互相欣赏但都偏深度和内敛',advice:'你是天然的长期搭档——你负责"系统"，TA负责"深度"'},
+      {mode:'🔥 开拓者',friction:'你觉得TA太短视；TA觉得你太慢',advice:'TA帮你把你的长期价值"卖"出去；你帮TA在"赢了之后"思考"然后呢"'}],
+    dashboard:{drive:65,stress:55,relation:45,meaning:90},energyTip:'你的意义感是八种模式中最高的之一，但风险是"在没人看见的地方燃烧"。本周找一个你信任的人，完整讲述你正在做的"长期投入"。'}
+};
+
+// Mode type signatures for Step 4 (sub-type matching)
+const SIGNATURES = {
+  A1:[{q:11,exp:'A',w:2},{q:18,exp:'A',w:2},{q:19,exp:'A',w:1},{q:0,exp:'A',w:1},{q:4,exp:'A',w:1},{q:22,exp:'A',w:1}],
+  C1:[{q:9,exp:'A',w:2},{q:5,exp:'A',w:1},{q:2,exp:'A',w:1},{q:20,exp:'A',w:1},{q:15,exp:'A',w:1},{q:1,exp:'A',w:1}],
+  A2:[{q:1,exp:'B',w:2},{q:3,exp:'B',w:2},{q:7,exp:'B',w:1},{q:11,exp:'B',w:1},{q:16,exp:'B',w:1},{q:21,exp:'B',w:1}],
+  D2:[{q:3,exp:'B',w:1},{q:5,exp:'D',w:1},{q:11,exp:'D',w:2},{q:17,exp:'D',w:1},{q:19,exp:'D',w:1},{q:22,exp:'D',w:1}],
+  B1:[{q:1,exp:'C',w:2},{q:2,exp:'C',w:2},{q:3,exp:'C',w:1},{q:12,exp:'C',w:1},{q:13,exp:'C',w:1},{q:17,exp:'C',w:1}],
+  D1:[{q:0,exp:'C',w:1},{q:10,exp:'C',w:1},{q:13,exp:'C',w:1},{q:15,exp:'C',w:1},{q:16,exp:'C',w:1},{q:23,exp:'C',w:2}],
+  B2:[{q:0,exp:'D',w:2},{q:2,exp:'D',w:2},{q:3,exp:'D',w:1},{q:5,exp:'D',w:1},{q:12,exp:'D',w:1},{q:15,exp:'D',w:1}],
+  C2:[{q:6,exp:'D',w:1},{q:7,exp:'D',w:2},{q:8,exp:'D',w:1},{q:11,exp:'D',w:2},{q:13,exp:'D',w:1},{q:15,exp:'D',w:1}]
+};
+
+// Q24 (index 23) quadrant routing
+const Q24_ROUTING = {
+  A: ['A1','C1'], // Quadrant I: 外+主
+  B: ['A2','D2'], // Quadrant II: 内+主
+  C: ['B1','D1'], // Quadrant III: 外+适
+  D: ['B2','C2']  // Quadrant IV: 内+适
+};
+
+const MODULE_NAMES = ['模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻'];
+
+// ==================== PARTICLE ENGINE ====================
+class ParticleEngine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.mouse = { x: -9999, y: -9999 };
+    this.colorBias = { r: 155, g: 142, b: 196 }; // muted purple
+    this.resize();
+    this.init();
+    this.bindEvents();
+    this.animate();
+  }
+  resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.canvas.width = this.width * dpr;
+    this.canvas.height = this.height * dpr;
+    this.canvas.style.width = this.width + 'px';
+    this.canvas.style.height = this.height + 'px';
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.pCount = this.width < 768 ? 60 : 120;
+    this.connectDist = this.width < 768 ? 80 : 120;
+  }
+  init() {
+    this.particles = [];
+    for (let i = 0; i < this.pCount; i++) {
+      this.particles.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.2 + 0.05
+      });
+    }
+  }
+  bindEvents() {
+    window.addEventListener('resize', () => { this.resize(); this.init(); });
+    document.addEventListener('mousemove', e => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; });
+    document.addEventListener('touchmove', e => { if (e.touches[0]) { this.mouse.x = e.touches[0].clientX; this.mouse.y = e.touches[0].clientY; } }, {passive:true});
+  }
+  setColorBias(r, g, b) { this.colorBias = { r, g, b }; }
+  animate() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    const {r,g,b} = this.colorBias;
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      // Mouse repulsion
+      const dx = p.x - this.mouse.x, dy = p.y - this.mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 80) {
+        const force = (80 - dist) / 80 * 0.03;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+      // Friction
+      p.vx *= 0.999; p.vy *= 0.999;
+      p.x += p.vx; p.y += p.vy;
+      // Wrap
+      if (p.x < 0) p.x = this.width; if (p.x > this.width) p.x = 0;
+      if (p.y < 0) p.y = this.height; if (p.y > this.height) p.y = 0;
+      // Draw
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(${r},${g},${b},${p.opacity})`;
+      this.ctx.fill();
+      // Connect nearby
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dx2 = p.x - p2.x, dy2 = p.y - p2.y;
+        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        if (dist2 < this.connectDist) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(p.x, p.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          this.ctx.strokeStyle = `rgba(${r},${g},${b},${0.025 * (1 - dist2 / this.connectDist)})`;
+          this.ctx.lineWidth = 0.5;
+          this.ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
+// ==================== APP STATE ====================
+const state = {
+  page: 'loading',
+  currentQ: 0,
+  answers: new Array(24).fill(null),
+  direction: 1,
+  result: null,
+  reportExpanded: false
+};
+
+// ==================== DOM REFS ====================
+const $pages = {
+  loading: document.getElementById('page-loading'),
+  start: document.getElementById('page-start'),
+  quiz: document.getElementById('page-quiz'),
+  result: document.getElementById('page-result')
+};
+const $progressFill = document.getElementById('progressFill');
+const $progressText = document.getElementById('progressText');
+const $moduleLabel = document.getElementById('moduleLabel');
+const $questionCard = document.getElementById('questionCard');
+const $questionNumber = document.getElementById('questionNumber');
+const $questionText = document.getElementById('questionText');
+const $optionsGrid = document.getElementById('optionsGrid');
+const $btnBack = document.getElementById('btnBack');
+const $btnNext = document.getElementById('btnNext');
+const $resultCompact = document.getElementById('resultCompact');
+const $resultFull = document.getElementById('resultFull');
+
+// ==================== NAVIGATION ====================
+function navigateTo(page) {
+  Object.keys($pages).forEach(k => {
+    $pages[k].classList.remove('active');
+  });
+  $pages[page].classList.add('active');
+  state.page = page;
+  if (page === 'result') {
+    $resultFull.classList.remove('expanded');
+    $resultFull.classList.add('collapsed');
+    state.reportExpanded = false;
+  }
+}
+
+// ==================== PARTICLE COLOR THEMES ====================
+function setParticleTheme(page) {
+  if (!window._particles) return;
+  const themes = {
+    loading: [155,142,196],
+    start: [155,142,196],
+    quiz: [124,200,216],
+    result: [124,200,216]
+  };
+  const [r,g,b] = themes[page] || [155,142,196];
+  window._particles.setColorBias(r,g,b);
+}
+
+// ==================== START PAGE INTERACTIONS ====================
+let _compassParallaxBound = false;
+let _magnetBound = false;
+
+function setupStartInteractions() {
+  const compass = document.getElementById('screenCompass');
+  const btn = document.getElementById('btnPlay');
+  if (!compass || !btn) return;
+
+  // Compass parallax: dots shift toward cursor
+  if (!_compassParallaxBound) {
+    document.addEventListener('mousemove', e => {
+      if (state.page !== 'start') return;
+      const rect = compass.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / (rect.width / 2);
+      const dy = (e.clientY - cy) / (rect.height / 2);
+      const c = (v, max) => Math.max(-max, Math.min(max, v));
+      compass.querySelectorAll('[data-depth]').forEach(dot => {
+        const depth = parseFloat(dot.dataset.depth);
+        dot.style.transform = `translate(${c(dx*depth*10,10)}px, ${c(dy*depth*10,10)}px)`;
+      });
+    });
+    _compassParallaxBound = true;
+  }
+
+  // Magnetic button (subtle)
+  if (!_magnetBound && btn) {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const bx = rect.left + rect.width / 2, by = rect.top + rect.height / 2;
+      btn.style.transform = `translate(${(e.clientX-bx)/(rect.width/2)*3}px, ${(e.clientY-by)/(rect.height/2)*2}px)`;
+    });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    _magnetBound = true;
+  }
+}
+
+// Boot interactions
+window.addEventListener('DOMContentLoaded', () => { setTimeout(setupStartInteractions, 400); });
+
+// ==================== GENERATE COMPASS TICKS ====================
+function generateTicks() {
+  const tickGroup = document.getElementById('tickGroup');
+  const majorTickGroup = document.getElementById('majorTicks');
+  if (!tickGroup || !majorTickGroup) return;
+  let h = '';
+  for (let i = 0; i < 72; i++) { h += `<line x1="100" y1="12" x2="100" y2="16" transform="rotate(${i*5} 100 100)"/>`; }
+  tickGroup.innerHTML = h;
+  h = '';
+  for (let i = 0; i < 12; i++) { h += `<line x1="100" y1="12" x2="100" y2="21" transform="rotate(${i*30} 100 100)"/>`; }
+  majorTickGroup.innerHTML = h;
+}
+
+// ==================== INIT ====================
+function init() {
+  const canvas = document.getElementById('particleCanvas');
+  window._particles = new ParticleEngine(canvas);
+  generateTicks();
+  setTimeout(() => {
+    navigateTo('start');
+    setParticleTheme('start');
+  }, 800);
+}
+
+// ==================== START QUIZ — with animation ====================
+function startQuiz() {
+  const compass = document.getElementById('screenCompass');
+  const inner = document.getElementById('screenInner');
+  if (!compass || !inner) { beginQuiz(); return; }
+
+  // Phase 1: Fast spin
+  compass.classList.add('spinning');
+
+  // Phase 2: Dots converge (overlaps slightly with spin end)
+  setTimeout(() => {
+    compass.classList.add('converging');
+  }, 600);
+
+  // Phase 3: Screen bursts
+  setTimeout(() => {
+    inner.classList.add('burst');
+  }, 1000);
+
+  // Phase 4: Navigate to quiz
+  setTimeout(() => {
+    beginQuiz();
+  }, 1400);
+}
+
+function beginQuiz() {
+  state.currentQ = 0;
+  state.answers = new Array(24).fill(null);
+  state.direction = 1;
+  // Reset screen animation classes for next visit
+  const compass = document.getElementById('screenCompass');
+  const inner = document.getElementById('screenInner');
+  if (compass) { compass.classList.remove('spinning','converging'); }
+  if (inner) { inner.classList.remove('burst'); }
+  navigateTo('quiz');
+  setParticleTheme('quiz');
+  renderQuestion();
+}
+
+// ==================== RENDER QUESTION ====================
+function renderQuestion() {
+  const i = state.currentQ;
+  const q = QUESTIONS[i];
+  const animClass = state.direction > 0 ? '' : 'reverse';
+  $questionCard.className = 'question-card ' + animClass;
+  // Force re-trigger animation
+  void $questionCard.offsetWidth;
+  $questionCard.className = 'question-card ' + animClass;
+
+  $questionNumber.textContent = 'Q' + q.id;
+  $questionText.textContent = q.text;
+  $moduleLabel.textContent = MODULE_NAMES[i];
+
+  let html = '';
+  q.options.forEach(opt => {
+    const sel = state.answers[i] === opt.l ? ' selected' : '';
+    html += `<button class="option-btn${sel}" data-letter="${opt.l}" onclick="selectAnswer('${opt.l}')">
+      <span class="option-letter">${opt.l}</span>
+      <span class="option-text">${opt.t}</span>
+    </button>`;
+  });
+  $optionsGrid.innerHTML = html;
+
+  // Progress
+  const pct = ((i + 1) / 24 * 100);
+  $progressFill.style.width = pct + '%';
+  $progressText.textContent = (i + 1) + ' / 24';
+
+  // Nav buttons
+  $btnBack.style.visibility = i === 0 ? 'hidden' : 'visible';
+  const hasAnswer = state.answers[i] !== null;
+  updateNextButton(hasAnswer);
+}
+
+function updateNextButton(enabled) {
+  if (enabled) {
+    $btnNext.classList.add('enabled');
+  } else {
+    $btnNext.classList.remove('enabled');
+  }
+}
+
+// ==================== SELECT ANSWER ====================
+function selectAnswer(letter) {
+  const i = state.currentQ;
+  state.answers[i] = letter;
+  // Update option buttons
+  const btns = $optionsGrid.querySelectorAll('.option-btn');
+  btns.forEach(b => {
+    b.classList.remove('selected');
+    if (b.dataset.letter === letter) b.classList.add('selected');
+  });
+  updateNextButton(true);
+
+  // Auto-advance after short delay (except last question)
+  if (i < 23) {
+    setTimeout(() => { nextQuestion(); }, 300);
+  } else {
+    // Last question: calculate result after selection
+    setTimeout(() => { calculateAndShow(); }, 400);
+  }
+}
+
+// ==================== NAVIGATION ====================
+function nextQuestion() {
+  if (state.currentQ < 23) {
+    state.direction = 1;
+    state.currentQ++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (state.currentQ > 0) {
+    state.direction = -1;
+    state.currentQ--;
+    renderQuestion();
+  }
+}
+
+// Keyboard support
+document.addEventListener('keydown', e => {
+  if (state.page !== 'quiz') return;
+  const keys = { '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
+  const letter = keys[e.key];
+  if (letter) selectAnswer(letter);
+  if (e.key === 'ArrowRight' && state.answers[state.currentQ] !== null) nextQuestion();
+  if (e.key === 'ArrowLeft') prevQuestion();
+});
+
+// ==================== SCORING ====================
+function calculateResult() {
+  const ans = state.answers;
+  // Step 1: Raw counts
+  let externalRaw = 0, internalRaw = 0;
+  let m1Act = 0, m1Adp = 0;
+  let m2Act = 0, m2Adp = 0;
+  let m3Act = 0, m3Adp = 0;
+  let m4Act = 0, m4Adp = 0;
+
+  for (let i = 0; i < 24; i++) {
+    const ch = ans[i];
+    // External/Internal
+    if (ch === 'A' || ch === 'C') externalRaw++;
+    else internalRaw++; // B or D
+
+    // Active/Adaptive per module
+    const isAct = (ch === 'A' || ch === 'B');
+    if (i < 6) { if (isAct) m1Act++; else m1Adp++; }
+    else if (i < 12) { if (isAct) m2Act++; else m2Adp++; }
+    else if (i < 18) { if (isAct) m3Act++; else m3Adp++; }
+    else { if (isAct) m4Act++; else m4Adp++; }
+  }
+
+  // Step 2: Weighted scores
+  const activeScore = m2Act * 3 + m1Act + m3Act + m4Act;
+  const adaptiveScore = m2Adp * 3 + m1Adp + m3Adp + m4Adp;
+
+  // Step 3: Quadrant
+  const extRatio = externalRaw / 24;
+  const actRatio = activeScore / 36;
+
+  let candidates;
+  if (extRatio >= 0.5 && actRatio >= 0.5) candidates = ['A1','C1'];
+  else if (extRatio < 0.5 && actRatio >= 0.5) candidates = ['A2','D2'];
+  else if (extRatio >= 0.5 && actRatio < 0.5) candidates = ['B1','D1'];
+  else candidates = ['B2','C2'];
+
+  // Step 4: Q24 routing + signature matching
+  const q24 = ans[23];
+  const q24Candidates = Q24_ROUTING[q24] || candidates;
+  // Intersection of quadrant candidates and Q24 candidates
+  let finalCandidates = candidates.filter(c => q24Candidates.includes(c));
+  if (finalCandidates.length === 0) finalCandidates = candidates;
+  let modeKey;
+  if (finalCandidates.length === 1) {
+    modeKey = finalCandidates[0];
+  } else {
+    // Signature matching
+    let bestKey = finalCandidates[0], bestScore = -Infinity;
+    for (const key of finalCandidates) {
+      let score = 0;
+      const sigs = SIGNATURES[key] || [];
+      for (const s of sigs) {
+        if (ans[s.q] === s.exp) score += s.w;
+      }
+      if (score > bestScore) { bestScore = score; bestKey = key; }
+    }
+    modeKey = bestKey;
+  }
+
+  // Step 5: Dashboard
+  const mode = MODES[modeKey];
+  const driveScore = Math.round(Math.max(externalRaw, internalRaw) / 24 * 100);
+  const stressBase = Math.round((6 - m2Act) / 6 * 100); // more adaptive in stress = higher stress
+  const relationScore = Math.round((ans.filter((a,i) => i>=12 && i<18 && (a==='A'||a==='C')).length / 6) * 100);
+  const meaningScore = Math.round((ans.filter((a,i) => i>=18 && (a==='B'||a==='D')).length / 6) * 100);
+
+  // Blend with mode preset
+  const dashboard = {
+    drive: Math.round(mode.dashboard.drive * 0.7 + driveScore * 0.3),
+    stress: Math.round(mode.dashboard.stress * 0.7 + stressBase * 0.3),
+    relation: Math.round(mode.dashboard.relation * 0.7 + relationScore * 0.3),
+    meaning: Math.round(mode.dashboard.meaning * 0.7 + meaningScore * 0.3)
+  };
+
+  return { modeKey, mode, dashboard, scores: { externalRaw, internalRaw, activeScore, adaptiveScore, extRatio, actRatio } };
+}
+
+function calculateAndShow() {
+  state.result = calculateResult();
+  navigateTo('result');
+  setParticleTheme('result');
+  renderResult();
+  // Dashboard animation triggers on next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      animateGauges(state.result.dashboard);
+    });
+  });
+}
+
+// ==================== RENDER RESULT ====================
+function renderResult() {
+  const { mode, dashboard } = state.result;
+
+  // Compact view
+  $resultCompact.innerHTML = `
+    <div class="mode-emoji">${mode.emoji}</div>
+    <h2 class="mode-name">${mode.name}<br><span class="mode-name-en">${mode.nameEn}</span></h2>
+    <p class="mode-tagline">${mode.tagline}</p>
+    <div class="dashboard">
+      ${renderGauge('动力值', dashboard.drive, 'var(--accent-gold)')}
+      ${renderGauge('压力值', dashboard.stress, 'var(--accent-coral)')}
+      ${renderGauge('关系值', dashboard.relation, 'var(--accent-cyan)')}
+      ${renderGauge('意义值', dashboard.meaning, 'var(--accent-green)')}
+    </div>
+    <div class="contradiction-card">
+      <h4>⚡ 当前阶段核心矛盾</h4>
+      <p>${mode.contradiction}</p>
+    </div>
+    <button class="btn-expand" id="btnExpand" onclick="toggleReport()">查看完整报告 ↓</button>
+  `;
+
+  // Full report
+  let spHtml = mode.superpowers.map(s => `
+    <div class="superpower-item">
+      <h4><span class="power-icon">${s.icon}</span>${s.title}</h4>
+      <p>${s.desc}</p>
+      <p class="highlight">▸ ${s.scene}</p>
+    </div>`).join('');
+
+  let trHtml = mode.traps.map(t => `
+    <div class="trap-item">
+      <h4><span class="trap-icon">${t.icon}</span>${t.title}</h4>
+      <p>${t.signal}</p>
+      <p>${t.consequence}</p>
+      <span class="signal-tag">⚠ ${t.warning}</span>
+    </div>`).join('');
+
+  let stHtml = mode.strategies.map(s => `
+    <div class="strategy-item">
+      <h4><span class="strategy-icon">${s.icon}</span>${s.title}</h4>
+      <p>${s.content}</p>
+      <span class="action-tag">📌 ${s.action}</span>
+    </div>`).join('');
+
+  let relHtml = `<table class="relation-table"><tr><th>与你互动的模式</th><th>可能的摩擦</th><th>协作建议</th></tr>
+    ${mode.relationships.map(r => `<tr><td>${r.mode}</td><td>${r.friction}</td><td>${r.advice}</td></tr>`).join('')}
+    </table>`;
+
+  $resultFull.innerHTML = `
+    <div class="report-section"><h3>📋 模式画像</h3><p>${mode.profile}</p></div>
+    <div class="report-section"><h3>💎 你的职场超能力</h3>${spHtml}</div>
+    <div class="report-section"><h3>⚠ 你的职场陷阱</h3>${trHtml}</div>
+    <div class="report-section"><h3>🧭 生存策略</h3>${stHtml}</div>
+    <div class="report-section"><h3>🤝 你与其他模式的相处指南</h3>${relHtml}</div>
+    <div class="report-section"><h3>🔋 能量管理建议</h3><p>${mode.energyTip || '定期回顾你的能量仪表盘，关注四维平衡。'}</p></div>
+  `;
+}
+
+function renderGauge(label, value, color) {
+  const r = 26, circ = 2 * Math.PI * r;
+  return `<div class="gauge">
+    <div class="gauge-ring">
+      <svg viewBox="0 0 64 64"><circle class="gauge-bg" cx="32" cy="32" r="${r}"/><circle class="gauge-fill" cx="32" cy="32" r="${r}" stroke="${color}" stroke-dasharray="${circ}" style="stroke-dashoffset:${circ}" data-target="${value}"/></svg>
+      <span class="gauge-value" id="gaugeVal_${label}">0%</span>
+    </div>
+    <span class="gauge-label">${label}</span>
+  </div>`;
+}
+
+function animateGauges(dashboard) {
+  const fills = document.querySelectorAll('.gauge-fill');
+  const r = 26, circ = 2 * Math.PI * r;
+  const keys = ['drive','stress','relation','meaning'];
+  const labels = ['动力值','压力值','关系值','意义值'];
+  fills.forEach((fill, i) => {
+    const target = dashboard[keys[i]];
+    const offset = circ - (target / 100) * circ;
+    fill.style.strokeDashoffset = offset;
+    // Count-up number animation
+    const valEl = document.getElementById('gaugeVal_' + labels[i]);
+    if (valEl) {
+      const startVal = 0;
+      const duration = 1200;
+      const startTime = performance.now();
+      function countUp(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        valEl.textContent = Math.round(startVal + (target - startVal) * eased) + '%';
+        if (progress < 1) requestAnimationFrame(countUp);
+      }
+      requestAnimationFrame(countUp);
+    }
+  });
+}
+
+function toggleReport() {
+  const full = $resultFull;
+  const btn = document.getElementById('btnExpand');
+  if (full.classList.contains('expanded')) {
+    full.classList.remove('expanded');
+    full.classList.add('collapsed');
+    btn.textContent = '查看完整报告 ↓';
+  } else {
+    full.classList.remove('collapsed');
+    full.classList.add('expanded');
+    btn.textContent = '收起完整报告 ↑';
+    setTimeout(() => { full.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  }
+  state.reportExpanded = !state.reportExpanded;
+}
+
+// ==================== RESET ====================
+function resetQuiz() {
+  state.currentQ = 0;
+  state.answers = new Array(24).fill(null);
+  state.result = null;
+  state.reportExpanded = false;
+  $resultFull.classList.remove('expanded');
+  $resultFull.classList.add('collapsed');
+  // Reset screen animation
+  const compass = document.getElementById('screenCompass');
+  const inner = document.getElementById('screenInner');
+  if (compass) { compass.classList.remove('spinning','converging'); }
+  if (inner) { inner.classList.remove('burst'); }
+  navigateTo('start');
+  setParticleTheme('start');
+}
+
+// ==================== SAVE ====================
+function saveResult() {
+  if (!state.result) return;
+  // Use print as save mechanism
+  window.print();
+}
+
+// ==================== BOOT ====================
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

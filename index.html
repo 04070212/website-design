@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0f">
+<title>吴苏 · 项目实验室</title>
+<style>
+/* ===== Reset & Variables ===== */
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121c;
+  --bg-card-hover: #1a1a2a;
+  --accent-cyan: #7cc8d8;
+  --accent-purple: #9b8ec4;
+  --accent-rose: #c9a0b8;
+  --accent-gold: #c9b878;
+  --accent-green: #7eb89e;
+  --text-primary: #e0e0ec;
+  --text-secondary: #9090a8;
+  --text-muted: #606078;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-glow: rgba(124,200,216,0.15);
+  --radius: 16px;
+  --font-sans: 'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;
+  --font-mono: 'SF Mono','Cascadia Code','Consolas',monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  min-height: 100%;
+  font-family: var(--font-sans);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; border: none; cursor: pointer; background: none; color: inherit; }
+
+/* ===== Canvas BG ===== */
+#particleCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+
+/* ===== Layout ===== */
+#app {
+  position: relative; z-index: 1;
+  max-width: 960px; margin: 0 auto;
+  padding: clamp(32px, 8vh, 80px) 24px 80px;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* ===== Header ===== */
+.header { text-align: center; margin-bottom: clamp(40px, 8vh, 64px); }
+.header h1 {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+.header p {
+  margin-top: 12px;
+  font-size: clamp(14px, 2vw, 17px);
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+/* ===== Project Grid ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* ===== Card ===== */
+.card {
+  display: flex; flex-direction: column;
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  transition: all 300ms cubic-bezier(0.4,0,0.2,1);
+  position: relative; overflow: hidden;
+  min-height: 180px;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+  opacity: 0; transition: opacity 300ms ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  background: var(--bg-card-hover);
+  border-color: rgba(124,200,216,0.2);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,200,216,0.05);
+}
+.card:hover::before { opacity: 1; }
+.card:active { transform: scale(0.98); }
+
+.card-emoji {
+  font-size: 40px; margin-bottom: 16px;
+  transition: transform 300ms ease;
+}
+.card:hover .card-emoji { transform: scale(1.1); }
+
+.card-title {
+  font-size: 18px; font-weight: 600; margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.card-desc {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6; flex: 1;
+}
+.card-tags {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;
+}
+.tag {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono); letter-spacing: 0.5px;
+}
+
+/* ===== Placeholder Card ===== */
+.card.placeholder {
+  opacity: 0.5; cursor: default;
+  border-style: dashed;
+}
+.card.placeholder:hover {
+  transform: none;
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
+.card.placeholder:hover::before { opacity: 0; }
+.card.placeholder .card-emoji { opacity: 0.4; }
+
+/* ===== Footer ===== */
+.footer {
+  margin-top: clamp(40px, 8vh, 72px);
+  text-align: center;
+  font-size: 13px; color: var(--text-muted);
+}
+.footer a:hover { color: var(--accent-cyan); transition: color 200ms; }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: auto; }
+}
+</style>
+</head>
+<body>
+<canvas id="particleCanvas"></canvas>
+
+<div id="app">
+  <header class="header">
+    <h1>吴苏 · 项目实验室</h1>
+    <p>一些有趣的小工具和小实验</p>
+  </header>
+
+  <div class="grid">
+    <!-- 赛博算命 -->
+    <a href="projects/cyber-fortune/" class="card">
+      <div class="card-emoji">🔮</div>
+      <div class="card-title">赛博算命</div>
+      <div class="card-desc">输入出生信息，生成星座/星盘/八字，查看流年趋势。占星 × 八字 × AI 合参。</div>
+      <div class="card-tags">
+        <span class="tag">React</span>
+        <span class="tag">占星</span>
+        <span class="tag">八字</span>
+      </div>
+    </a>
+
+    <!-- 职场能量罗盘 -->
+    <a href="projects/career-compass/" class="card">
+      <div class="card-emoji">🧭</div>
+      <div class="card-title">职场能量罗盘</div>
+      <div class="card-desc">24 道题 · 8 分钟，发现你的职场生存模式。找到核心矛盾与应对策略。</div>
+      <div class="card-tags">
+        <span class="tag">测评</span>
+        <span class="tag">职场</span>
+        <span class="tag">心理学</span>
+      </div>
+    </a>
+
+    <!-- 简历优化助手 -->
+    <a href="projects/resume-optimizer/" class="card">
+      <div class="card-emoji">📄</div>
+      <div class="card-title">简历优化助手</div>
+      <div class="card-desc">粘贴简历 + 岗位要求，AI 帮你优化润色。匹配度评分、修改对比、多轮精修。</div>
+      <div class="card-tags">
+        <span class="tag">AI</span>
+        <span class="tag">求职</span>
+        <span class="tag">实用工具</span>
+      </div>
+    </a>
+
+    <!-- 即将推出 -->
+    <div class="card placeholder">
+      <div class="card-emoji">🃏</div>
+      <div class="card-title">即将推出</div>
+      <div class="card-desc">更多项目正在构思中……</div>
+      <div class="card-tags">
+        <span class="tag">???</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Built with <a href="https://claude.ai/code" target="_blank" rel="noopener">Claude Code</a> · 2026</p>
+  </footer>
+</div>
+
+<script>
+// ===== Particle Engine (adapted from 职场罗盘) =====
+class ParticleEngine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.mouse = { x: -9999, y: -9999 };
+    this.colorBias = { r: 155, g: 142, b: 196 };
+    this.resize();
+    this.init();
+    this.bindEvents();
+    this.animate();
+  }
+  resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.width = window.innerWidth;
+    this.height = document.body.scrollHeight;
+    this.canvas.width = this.width * dpr;
+    this.canvas.height = this.height * dpr;
+    this.canvas.style.width = this.width + 'px';
+    this.canvas.style.height = this.height + 'px';
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.pCount = this.width < 768 ? 50 : 100;
+    this.connectDist = this.width < 768 ? 80 : 120;
+  }
+  init() {
+    this.particles = [];
+    for (let i = 0; i < this.pCount; i++) {
+      this.particles.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        size: Math.random() * 2.2 + 0.3,
+        opacity: Math.random() * 0.18 + 0.04
+      });
+    }
+  }
+  bindEvents() {
+    window.addEventListener('resize', () => { this.resize(); this.init(); });
+    document.addEventListener('mousemove', e => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; });
+    document.addEventListener('touchmove', e => { if (e.touches[0]) { this.mouse.x = e.touches[0].clientX; this.mouse.y = e.touches[0].clientY; } }, {passive:true});
+  }
+  animate() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    const {r,g,b} = this.colorBias;
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      const dx = p.x - this.mouse.x, dy = p.y - this.mouse.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 90) {
+        const force = (90 - dist) / 90 * 0.025;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+      p.vx *= 0.999; p.vy *= 0.999;
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = this.width; if (p.x > this.width) p.x = 0;
+      if (p.y < 0) p.y = this.height; if (p.y > this.height) p.y = 0;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      this.ctx.fillStyle = `rgba(${r},${g},${b},${p.opacity})`;
+      this.ctx.fill();
+      for (let j = i+1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dx2 = p.x - p2.x, dy2 = p.y - p2.y;
+        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+        if (dist2 < this.connectDist) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(p.x, p.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          this.ctx.strokeStyle = `rgba(${r},${g},${b},${0.02 * (1 - dist2/this.connectDist)})`;
+          this.ctx.lineWidth = 0.5;
+          this.ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
+// ===== Init =====
+window.addEventListener('DOMContentLoaded', () => {
+  new ParticleEngine(document.getElementById('particleCanvas'));
+});
+</script>
+</body>
+</html>

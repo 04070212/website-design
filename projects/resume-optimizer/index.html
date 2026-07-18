@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0f">
+<title>简历优化助手</title>
+<style>
+/* ===== Reset & Variables ===== */
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121c;
+  --bg-card-hover: #1a1a2a;
+  --bg-input: #0f0f18;
+  --accent-cyan: #7cc8d8;
+  --accent-purple: #9b8ec4;
+  --accent-rose: #c9a0b8;
+  --accent-gold: #c9b878;
+  --accent-green: #7eb89e;
+  --accent-coral: #c98080;
+  --text-primary: #e0e0ec;
+  --text-secondary: #9090a8;
+  --text-muted: #606078;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-glow: rgba(124,200,216,0.15);
+  --radius: 14px;
+  --font-sans: 'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;
+  --font-mono: 'SF Mono','Cascadia Code','Consolas',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%}
+body{
+  min-height:100%;font-family:var(--font-sans);
+  background:var(--bg-deep);color:var(--text-primary);
+  -webkit-font-smoothing:antialiased;
+}
+body.modal-open{overflow:hidden}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;border:none;cursor:pointer;background:none;color:inherit;font-size:inherit}
+
+/* ===== Layout ===== */
+.app{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:16px}
+.topbar h1{
+  font-size:26px;font-weight:700;
+  background:linear-gradient(135deg,var(--accent-purple),var(--accent-cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.btn-sm{
+  padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;
+  border:1px solid var(--border-subtle);color:var(--text-secondary);
+  transition:all 200ms;
+}
+.btn-sm:hover{border-color:rgba(255,255,255,0.2);color:var(--text-primary)}
+.btn-sm.active{background:rgba(124,200,216,0.1);border-color:var(--accent-cyan);color:var(--accent-cyan)}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(126,184,158,0.3);color:var(--accent-green);font-family:var(--font-mono)}
+
+/* ===== Sections ===== */
+.section{display:none}
+.section.active{display:block}
+
+/* ===== Card ===== */
+.card{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius);padding:28px;margin-bottom:20px;
+}
+.card h3{font-size:17px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* ===== Form ===== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid .full{grid-column:1/-1}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--text-secondary);font-weight:500}
+.field input,.field textarea,.field select{
+  padding:12px 14px;border-radius:10px;border:1px solid var(--border-subtle);
+  background:var(--bg-input);color:var(--text-primary);font-size:14px;
+  font-family:inherit;resize:vertical;transition:border-color 200ms;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:rgba(124,200,216,0.4);
+}
+.field textarea{min-height:180px;line-height:1.6}
+.field select{appearance:none;-webkit-appearance:none;cursor:pointer}
+::placeholder{color:var(--text-muted)}
+
+/* ===== Buttons ===== */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 32px;border-radius:28px;font-size:15px;font-weight:600;
+  transition:all 200ms;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent-purple),var(--accent-cyan));
+  color:#fff;box-shadow:0 0 20px rgba(124,200,216,0.12);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(124,200,216,0.2)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-outline{border:1px solid var(--border-subtle);color:var(--text-secondary)}
+.btn-outline:hover{border-color:rgba(255,255,255,0.2);color:var(--text-primary)}
+
+/* ===== Setup Page ===== */
+.api-form{max-width:500px;margin:40px auto}
+.api-form .btn{width:100%;justify-content:center;margin-top:20px}
+.help-text{font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.5}
+.help-text code{font-family:var(--font-mono);color:var(--accent-cyan);font-size:11px}
+
+/* ===== Loading ===== */
+.loading-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(10,10,15,0.85);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.loading-spin{font-size:48px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.loading-text{font-size:15px;color:var(--text-secondary)}
+
+/* ===== Match Score Gauge ===== */
+.score-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.gauge{
+  position:relative;width:100px;height:100px;flex-shrink:0;
+}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:5}
+.gauge-fill{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)}
+.gauge-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:700}
+.score-meta{flex:1;min-width:200px}
+.score-meta p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+
+/* ===== Suggestions ===== */
+.sugg-list{display:flex;flex-direction:column;gap:10px}
+.sugg-item{display:flex;gap:12px;padding:14px 16px;border-radius:10px;background:rgba(155,142,196,0.05);border:1px solid rgba(155,142,196,0.08)}
+.sugg-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(124,200,216,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--accent-cyan)}
+.sugg-text{font-size:14px;color:var(--text-secondary);line-height:1.5}
+
+/* ===== Comparison ===== */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.diff-grid{grid-template-columns:1fr}}
+.diff-col{border-radius:10px;padding:18px;overflow:hidden}
+.diff-col.before{background:rgba(201,128,128,0.06);border:1px solid rgba(201,128,128,0.1)}
+.diff-col.after{background:rgba(126,184,158,0.06);border:1px solid rgba(126,184,158,0.1)}
+.diff-col h4{font-size:14px;font-weight:600;margin-bottom:12px}
+.diff-col.before h4{color:var(--accent-coral)}
+.diff-col.after h4{color:var(--accent-green)}
+.diff-content{font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--text-secondary);max-height:400px;overflow-y:auto}
+
+/* ===== Changes ===== */
+.change-item{padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border-subtle);margin-bottom:10px}
+.change-type{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:8px}
+.change-type.add{background:rgba(126,184,158,0.15);color:var(--accent-green)}
+.change-type.modify{background:rgba(124,200,216,0.12);color:var(--accent-cyan)}
+.change-type.highlight{background:rgba(201,184,120,0.15);color:var(--accent-gold)}
+.change-row{display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.6}
+.change-orig{color:var(--accent-coral)}
+.change-new{color:var(--accent-green)}
+.change-reason{color:var(--text-muted);font-size:12px;margin-top:4px}
+
+/* ===== Followup ===== */
+.followup-box{margin-top:20px;display:flex;gap:10px}
+.followup-box input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-primary);font-size:14px;font-family:inherit}
+.followup-box input:focus{outline:none;border-color:rgba(124,200,216,0.4)}
+
+/* ===== History ===== */
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-radius:10px;background:var(--bg-input);
+  border:1px solid var(--border-subtle);cursor:pointer;transition:all 200ms;
+  flex-wrap:wrap;gap:10px;
+}
+.history-item:hover{border-color:rgba(124,200,216,0.3)}
+.history-item .info{flex:1;min-width:200px}
+.history-item .info .title{font-size:14px;font-weight:500}
+.history-item .info .meta{font-size:12px;color:var(--text-muted);margin-top:4px}
+.history-item .score{font-size:20px;font-weight:700;color:var(--accent-cyan)}
+.history-item .del-btn{color:var(--accent-coral);font-size:18px;padding:4px 8px;border-radius:6px}
+.history-item .del-btn:hover{background:rgba(201,128,128,0.1)}
+.empty-state{text-align:center;padding:40px;color:var(--text-muted);font-size:15px}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <h1>📄 简历优化助手</h1>
+    <div class="topbar-actions">
+      <span id="statusBadge" class="badge">🔑 已配置</span>
+      <button class="btn-sm" id="btnSettings" onclick="showSetup()">⚙️ 设置</button>
+      <button class="btn-sm" id="btnHistory" onclick="toggleHistory()">📋 历史记录</button>
+    </div>
+  </div>
+
+  <!-- Setup Page -->
+  <div id="setupSection" class="section">
+    <div class="card api-form">
+      <h3>⚙️ API 配置</h3>
+      <div class="form-grid">
+        <div class="field full">
+          <label>DeepSeek API 密钥</label>
+          <input type="password" id="apiKeyInput" placeholder="sk-...">
+          <div class="help-text">在 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" style="color:var(--accent-cyan)">platform.deepseek.com</a> 创建 Key，粘贴到这里。密钥只存本地，不会上传到任何服务器。</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
+      <button class="btn-sm" onclick="toggleAdvanced()" style="margin-top:16px;font-size:12px;color:var(--text-muted)">🔧 高级设置（自建 API）</button>
+      <div id="advancedFields" style="display:none;margin-top:16px">
+        <div class="form-grid">
+          <div class="field full">
+            <label>API 地址</label>
+            <input type="text" id="apiUrlInput" placeholder="https://api.deepseek.com/anthropic">
+          </div>
+          <div class="field full">
+            <label>模型名称</label>
+            <input type="text" id="modelInput" placeholder="deepseek-v4-pro">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Page -->
+  <div id="mainSection" class="section">
+    <!-- Input -->
+    <div class="card">
+      <h3>📝 简历内容</h3>
+      <div class="field" style="margin-bottom:16px">
+        <textarea id="resumeInput" placeholder="在此粘贴你的简历原文...&#10;&#10;示例：&#10;张三 | 前端开发工程师 | 3年经验&#10;● 主导公司官网重构，性能提升40%&#10;● 负责团队代码审查与技术分享&#10;● 精通 React / Vue / TypeScript"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>目标行业</label>
+          <input type="text" id="industryInput" placeholder="如：互联网 / 金融 / 教育">
+        </div>
+        <div class="field">
+          <label>目标岗位</label>
+          <input type="text" id="positionInput" placeholder="如：高级前端工程师">
+        </div>
+        <div class="field full">
+          <label>岗位要求（选填）</label>
+          <textarea id="requirementsInput" placeholder="粘贴 JD 或写出关键要求，越具体优化效果越好&#10;如：&#10;● 5年以上 React 经验&#10;● 有团队管理经历&#10;● 熟悉 Node.js 后端开发" style="min-height:100px"></textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnOptimize" onclick="optimize()" style="margin-top:20px">
+        🚀 开始优化
+      </button>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsArea"></div>
+  </div>
+
+  <!-- History Page -->
+  <div id="historySection" class="section">
+    <div class="card">
+      <h3>📋 历史记录</h3>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display:none">
+  <div class="loading-spin">🤖</div>
+  <div class="loading-text" id="loadingText">正在分析并优化简历…</div>
+</div>
+
+<script>
+// ==================== STATE ====================
+const LS_KEY = 'resume_optimizer_web';
+const HISTORY_KEY = 'resume_optimizer_history';
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveConfigToLS(cfg) { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); }
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+  catch { return []; }
+}
+function saveHistory(list) { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
+
+let config = loadConfig();
+let currentRecord = null;
+
+// ==================== NAVIGATION ====================
+function showMain() {
+  document.getElementById('setupSection').classList.remove('active');
+  document.getElementById('mainSection').classList.add('active');
+  document.getElementById('historySection').classList.remove('active');
+}
+function showSetup() {
+  const cfg = loadConfig();
+  document.getElementById('apiKeyInput').value = cfg.apiKey || '';
+  document.getElementById('apiUrlInput').value = cfg.apiUrl || 'https://api.deepseek.com/anthropic';
+  document.getElementById('modelInput').value = cfg.model || '';
+  document.getElementById('setupSection').classList.add('active');
+  document.getElementById('mainSection').classList.remove('active');
+  document.getElementById('historySection').classList.remove('active');
+  document.getElementById('advancedFields').style.display = 'none';
+}
+
+function toggleAdvanced() {
+  const el = document.getElementById('advancedFields');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleHistory() {
+  const hs = document.getElementById('historySection');
+  if (hs.classList.contains('active')) {
+    showMain();
+    document.getElementById('btnHistory').classList.remove('active');
+  } else {
+    renderHistory();
+    hs.classList.add('active');
+    document.getElementById('mainSection').classList.remove('active');
+    document.getElementById('setupSection').classList.remove('active');
+    document.getElementById('btnHistory').classList.add('active');
+  }
+}
+
+// ==================== SETUP ====================
+function saveConfig() {
+  config.apiKey = document.getElementById('apiKeyInput').value.trim();
+  config.apiUrl = document.getElementById('apiUrlInput').value.trim().replace(/\/$/, '') || 'https://api.deepseek.com/anthropic';
+  config.model = document.getElementById('modelInput').value.trim() || 'deepseek-v4-pro';
+  if (!config.apiKey) { alert('请输入 API 密钥'); return; }
+
+  saveConfigToLS(config);
+  document.getElementById('statusBadge').textContent = '🔑 已配置';
+  showMain();
+}
+
+// ==================== LOADING ====================
+let loadingTimer = null;
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || '正在分析并优化简历…';
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.body.classList.add('modal-open');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.body.classList.remove('modal-open');
+  if (loadingTimer) { clearInterval(loadingTimer); loadingTimer = null; }
+}
+
+// ==================== OPTIMIZE ====================
+async function optimize() {
+  if (!config.apiKey) { alert('请先配置 API 密钥'); showSetup(); return; }
+
+  const resume = document.getElementById('resumeInput').value.trim();
+  if (!resume) { alert('请粘贴简历内容'); return; }
+
+  const industry = document.getElementById('industryInput').value.trim();
+  const position = document.getElementById('positionInput').value.trim();
+  if (!position) { alert('请至少填写目标岗位'); return; }
+  const requirements = document.getElementById('requirementsInput').value.trim();
+
+  const jobInfo = { industry: industry || '未指定', position, requirements: requirements || '未指定' };
+
+  document.getElementById('btnOptimize').disabled = true;
+  showLoading('正在分析并优化简历…');
+
+  try {
+    const result = await callAI(buildPrompt(resume, jobInfo));
+    const data = parseAIResponse(result);
+    data.jobInfo = jobInfo;
+    data.originalContent = resume;
+    data.timestamp = Date.now();
+    data.id = 'rec_' + Date.now();
+
+    currentRecord = data;
+    renderResults(data);
+
+    // Save history
+    const history = loadHistory();
+    history.unshift({ id: data.id, position, timestamp: data.timestamp, matchScore: data.match_score });
+    if (history.length > 50) history.length = 50;
+    saveHistory(history);
+  } catch (e) {
+    alert('优化失败：' + (e.message || '未知错误'));
+    console.error(e);
+  } finally {
+    document.getElementById('btnOptimize').disabled = false;
+    hideLoading();
+  }
+}
+
+// ==================== FOLLOWUP ====================
+async function followup() {
+  if (!currentRecord) return;
+  const input = document.getElementById('followupInput');
+  const feedback = input.value.trim();
+  if (!feedback) return;
+
+  input.value = '';
+  showLoading('正在根据反馈继续优化…');
+
+  try {
+    const lastContent = currentRecord.optimized_content || '';
+    const result = await callAI(buildFollowupPrompt(lastContent, feedback));
+    const data = parseAIResponse(result);
+    data.jobInfo = currentRecord.jobInfo;
+    data.originalContent = currentRecord.originalContent;
+    data.followup = true;
+    data.timestamp = Date.now();
+    data.id = 'rec_' + Date.now();
+
+    currentRecord = data;
+    renderResults(data);
+  } catch (e) {
+    alert('优化失败：' + (e.message || '未知错误'));
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+// ==================== AI CALL ====================
+async function callAI(prompt) {
+  const url = `${config.apiUrl}/v1/messages`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: config.model || 'deepseek-v4-pro',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`API 返回 ${resp.status}${errText ? ': ' + errText.slice(0, 200) : ''}`);
+  }
+
+  const data = await resp.json();
+  const content = data?.content || [];
+  const textBlock = content.find(b => b.type === 'text');
+  if (!textBlock) throw new Error('API 返回格式异常，未找到文本内容');
+  return textBlock.text || '';
+}
+
+function parseAIResponse(text) {
+  // Try direct JSON
+  try { return JSON.parse(text); } catch {}
+  // Try extract JSON block
+  const m = text.match(/\{[\s\S]*\}/);
+  if (m) {
+    try { return JSON.parse(m[0]); } catch {}
+  }
+  // Fallback: treat whole text as optimized content
+  return { match_score: null, suggestions: [], optimized_content: text, changes: [] };
+}
+
+// ==================== PROMPTS ====================
+function buildPrompt(resume, jobInfo) {
+  return `你是一位专业的简历优化顾问。请根据以下信息优化简历：
+
+【目标岗位信息】
+行业/领域: ${jobInfo.industry}
+岗位名称: ${jobInfo.position}
+岗位要求: ${jobInfo.requirements}
+
+【原始简历内容】
+${resume}
+
+请完成以下任务：
+1. 分析简历与目标岗位的匹配度 (0-100分)
+2. 识别简历中的不足之处
+3. 提供具体优化建议 (3-5条)
+4. 重写简历内容，突出与岗位要求匹配的技能和经历
+5. 详细说明修改位置和理由
+
+请严格按照以下 JSON 格式返回结果（不要添加任何其他文字）：
+
+{
+  "match_score": 匹配度评分(数字0-100),
+  "suggestions": ["优化建议1","优化建议2","优化建议3"],
+  "optimized_content": "优化后的完整简历内容",
+  "changes": [{"type":"修改类型(内容补充/格式调整/重点突出)","original":"原始内容片段","optimized":"修改后内容","reason":"修改理由"}]
+}
+
+注意：JSON 必须是有效的，不要在 JSON 外添加任何说明文字。`;
+}
+
+function buildFollowupPrompt(previousContent, feedback) {
+  return `用户对之前的简历优化结果有以下反馈，请根据反馈进一步优化简历：
+
+【当前优化后的简历内容】
+${previousContent}
+
+【用户反馈】
+${feedback}
+
+请根据用户反馈修改简历，并以 JSON 格式返回：
+
+{
+  "optimized_content": "修改后的完整简历内容",
+  "changes": [{"type":"修改类型","original":"原始内容片段","optimized":"修改后内容","reason":"修改理由"}]
+}
+
+注意：JSON 必须是有效的，不要在 JSON 外添加任何说明文字。`;
+}
+
+// ==================== RENDER ====================
+function renderResults(data) {
+  const area = document.getElementById('resultsArea');
+  let scoreColor;
+  const s = data.match_score;
+  if (s == null) scoreColor = 'var(--accent-cyan)';
+  else if (s >= 80) scoreColor = 'var(--accent-green)';
+  else if (s >= 60) scoreColor = 'var(--accent-gold)';
+  else scoreColor = 'var(--accent-coral)';
+
+  const scoreHTML = s != null ? `
+    <div class="card">
+      <h3>📊 匹配度分析</h3>
+      <div class="score-row">
+        <div class="gauge">
+          <svg viewBox="0 0 100 100">
+            <circle class="gauge-bg" cx="50" cy="50" r="42"/>
+            <circle class="gauge-fill" cx="50" cy="50" r="42"
+              stroke="${scoreColor}"
+              stroke-dasharray="${2 * Math.PI * 42}"
+              stroke-dashoffset="${2 * Math.PI * 42 * (1 - s/100)}" id="gaugeArc"/>
+          </svg>
+          <div class="gauge-val" style="color:${scoreColor}">${s}</div>
+        </div>
+        <div class="score-meta">
+          <p>匹配度评分：<strong style="color:${scoreColor}">${s}/100</strong></p>
+          <p style="margin-top:4px">${s >= 80 ? '🎯 简历与岗位高度匹配，可直接投递'
+            : s >= 60 ? '👍 匹配度良好，优化后可提升竞争力'
+            : '📝 建议根据优化建议大幅调整后再投递'}</p>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  const suggHTML = data.suggestions?.length ? `
+    <div class="card">
+      <h3>💡 优化建议</h3>
+      <div class="sugg-list">
+        ${data.suggestions.map((t, i) => `
+          <div class="sugg-item">
+            <div class="sugg-num">${i + 1}</div>
+            <div class="sugg-text">${escHtml(t)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  const changesHTML = data.changes?.length ? `
+    <div class="card">
+      <h3>📝 修改详情</h3>
+      ${data.changes.map(c => {
+        const typeClass = c.type?.includes('补充') ? 'add' : c.type?.includes('突出') ? 'highlight' : 'modify';
+        return `<div class="change-item">
+          <span class="change-type ${typeClass}">${escHtml(c.type || '修改')}</span>
+          <div class="change-row">
+            <div class="change-orig">− ${escHtml(c.original || '')}</div>
+            <div class="change-new">+ ${escHtml(c.optimized || '')}</div>
+            ${c.reason ? `<div class="change-reason">💬 ${escHtml(c.reason)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  ` : '';
+
+  const diffHTML = data.originalContent && data.optimized_content ? `
+    <div class="card">
+      <h3>🔍 修改前后对比</h3>
+      <div class="diff-grid">
+        <div class="diff-col before">
+          <h4>📋 修改前</h4>
+          <div class="diff-content">${escHtml(data.originalContent)}</div>
+        </div>
+        <div class="diff-col after">
+          <h4>✨ 修改后</h4>
+          <div class="diff-content">${escHtml(data.optimized_content)}</div>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  const followupHTML = `
+    <div class="card">
+      <h3>💬 继续优化</h3>
+      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px">对结果不满意？告诉 AI 你的想法，继续精修。</p>
+      <div class="followup-box">
+        <input type="text" id="followupInput" placeholder="如：请更突出管理经验 / 把项目经历写得更量化 / 缩短到一页纸"
+          onkeydown="if(event.key==='Enter')followup()">
+        <button class="btn btn-outline" onclick="followup()">发送 →</button>
+      </div>
+    </div>
+  `;
+
+  const downloadHTML = data.optimized_content ? `
+    <div style="text-align:right;margin-bottom:20px">
+      <button class="btn btn-outline" onclick="downloadResume()">📥 下载优化后简历</button>
+    </div>
+  ` : '';
+
+  area.innerHTML = downloadHTML + scoreHTML + suggHTML + changesHTML + diffHTML + followupHTML;
+
+  // Animate gauge
+  if (s != null) {
+    setTimeout(() => {
+      const arc = document.getElementById('gaugeArc');
+      if (arc) arc.style.strokeDashoffset = (2 * Math.PI * 42 * (1 - s/100));
+    }, 100);
+  }
+
+  area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function downloadResume() {
+  if (!currentRecord?.optimized_content) return;
+  const blob = new Blob([currentRecord.optimized_content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `优化简历_${currentRecord.jobInfo?.position || '未命名'}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== HISTORY ====================
+function renderHistory() {
+  const history = loadHistory();
+  const list = document.getElementById('historyList');
+  if (!history.length) {
+    list.innerHTML = '<div class="empty-state">📭 暂无历史记录</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="history-item" onclick="loadRecord('${h.id}')">
+      <div class="info">
+        <div class="title">${escHtml(h.position || '未命名')}</div>
+        <div class="meta">${new Date(h.timestamp).toLocaleString('zh-CN')}</div>
+      </div>
+      <div class="score">${h.matchScore != null ? h.matchScore + '分' : '—'}</div>
+      <button class="del-btn" onclick="event.stopPropagation();deleteRecord('${h.id}')" title="删除">✕</button>
+    </div>
+  `).join('');
+}
+
+function loadRecord(id) {
+  const history = loadHistory();
+  const rec = history.find(h => h.id === id);
+  if (!rec) return;
+
+  // We only have summary in history, can't restore full detail
+  // But we can restore from localStorage full records if saved
+  alert('点击"开始优化"重新获取完整结果。历史记录仅保存摘要。');
+}
+
+function deleteRecord(id) {
+  if (!confirm('确定删除这条记录？')) return;
+  const history = loadHistory().filter(h => h.id !== id);
+  saveHistory(history);
+  renderHistory();
+}
+
+// ==================== UTILS ====================
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ==================== INIT ====================
+(function init() {
+  // Load saved resume/job from session
+  try {
+    const draft = JSON.parse(sessionStorage.getItem('resume_draft') || '{}');
+    if (draft.resume) document.getElementById('resumeInput').value = draft.resume;
+    if (draft.industry) document.getElementById('industryInput').value = draft.industry;
+    if (draft.position) document.getElementById('positionInput').value = draft.position;
+    if (draft.requirements) document.getElementById('requirementsInput').value = draft.requirements;
+  } catch {}
+
+  // Auto-save draft every 3s
+  setInterval(() => {
+    const draft = {
+      resume: document.getElementById('resumeInput')?.value || '',
+      industry: document.getElementById('industryInput')?.value || '',
+      position: document.getElementById('positionInput')?.value || '',
+      requirements: document.getElementById('requirementsInput')?.value || '',
+    };
+    sessionStorage.setItem('resume_draft', JSON.stringify(draft));
+  }, 3000);
+
+  if (config.apiKey) {
+    document.getElementById('statusBadge').textContent = '🔑 已配置';
+    showMain();
+  } else {
+    document.getElementById('statusBadge').textContent = '⚠ 未配置';
+    showSetup();
+  }
+})();
+</script>
+</body>
+</html>
