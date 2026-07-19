@@ -69,3 +69,19 @@ npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-fro
 - 改完后更新 `CLAUDE.md` 中的子项目列表（如有新增）
 - 子项目需要构建步骤的，构建产物拷贝到对应文件夹
 - Vite/React 项目记得设 `base: './'`
+
+## 5. 自动发布到线上
+
+**每次网页设计工作结束后，必须自动执行以下步骤，不可跳过：**
+
+```bash
+cd E:\AI\projects\网页设计
+git add .
+git commit -m "更新：<简述改了什么>"
+git push
+```
+
+推送后 GitHub Pages 自动部署，线上网址 https://04070212.github.io/website-design/ 即时更新。
+
+- 如果 `git push` 需要认证，提示用户先运行 `gh auth login`
+- commit 信息用中文简述改动内容
