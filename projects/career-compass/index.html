@@ -2,351 +2,558 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#08080f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
 <meta name="description" content="职场能量罗盘 - 发现你的职场生存模式。24道题，8分钟，找到你在职场中的核心矛盾与应对策略。">
 <meta property="og:title" content="职场能量罗盘 - 发现你的职场生存模式">
 <meta property="og:description" content="24道题测出你的职场生存模式，获得专属行动指南。">
 <meta property="og:type" content="website">
-<title>职场能量罗盘 - 发现你的职场生存模式</title>
+<title>职场能量罗盘</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ===== CSS Variables ===== */
-:root {
-  --bg-deep: #0a0a0f;
-  --bg-primary: #0f0f18;
-  --bg-card: #161622;
-  --bg-elevated: #1c1c2e;
-  --accent-cyan: #7cc8d8;
-  --accent-purple: #9b8ec4;
-  --accent-rose: #c9a0b8;
-  --accent-gold: #c9b878;
-  --accent-green: #7eb89e;
-  --accent-coral: #c98080;
-  --gradient-main: linear-gradient(135deg, #9b8ec4, #7cc8d8);
-  --gradient-accent: linear-gradient(135deg, #c9a0b8, #c9b878);
-  --text-primary: #e8e8f0;
-  --text-secondary: #9898b0;
-  --text-muted: #686880;
-  --border-subtle: rgba(155, 142, 196, 0.12);
-  --border-glow: rgba(124, 200, 216, 0.25);
-  --shadow-neon: 0 0 30px rgba(124, 200, 216, 0.12), 0 0 80px rgba(155, 142, 196, 0.06);
-  --shadow-elevated: 0 4px 32px rgba(0, 0, 0, 0.4);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --font-heading: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
-body {
-  font-family: var(--font-body);
-  background: var(--bg-deep);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  user-select: none;
+button{font-family:inherit;border:none;cursor:pointer;background:none;color:inherit;-webkit-appearance:none;appearance:none}
+a{color:inherit;text-decoration:none}
+
+/* ===== ACCENT ===== */
+:root{--accent:#5E0ED7}
+
+/* ===== VIDEO BG ===== */
+#bgVideo{
+  position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;
 }
-button { font-family: inherit; border: none; cursor: pointer; background: none; color: inherit; -webkit-appearance: none; appearance: none; }
-.report-section * { -webkit-touch-callout: default; user-select: text; }
-
-/* ===== Canvas Background ===== */
-#particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
-/* ===== App Container ===== */
-#app { position: relative; z-index: 1; height: 100%; width: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; }
-
-/* ===== Page Base ===== */
-.page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity 400ms cubic-bezier(0.4,0,0.2,1), transform 400ms cubic-bezier(0.4,0,0.2,1); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.page.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-/* ===== Loading Page ===== */
-#page-loading.active { background: var(--bg-deep); }
-
-/* ===== Start Page — Screen Card ===== */
-#page-start { gap: clamp(12px, 3vh, 24px); }
-.screen-label { font-size: clamp(15px, 3vw, 20px); color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; text-align: center; }
-.screen-card {
-  width: min(82vw, 420px); aspect-ratio: 1 / 1;
-  border-radius: clamp(16px, 3vw, 24px);
-  background: radial-gradient(ellipse at center, rgba(155,142,196,0.06) 0%, rgba(0,0,0,0.3) 100%), var(--bg-card);
-  border: 1px solid rgba(255,255,255,0.06);
-  position: relative; overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
-}
-.screen-inner {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: clamp(12px, 2vh, 20px);
-  transition: transform 400ms cubic-bezier(0.4,0,0.2,1), opacity 300ms ease;
-}
-.screen-compass {
-  width: 68%; aspect-ratio: 1 / 1;
-  transition: transform 800ms cubic-bezier(0.25,0.1,0.25,1);
-}
-.screen-compass svg { width: 100%; height: 100%; overflow: visible; }
-.screen-compass .dot-north, .screen-compass .dot-south,
-.screen-compass .dot-east, .screen-compass .dot-west { transition: transform 400ms cubic-bezier(0.25,0.1,0.25,1); }
-
-/* Screen idle animation — slow breathing rotation */
-#page-start.active .screen-compass { animation: compassBreathe 8s ease-in-out infinite; }
-@keyframes compassBreathe {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(3deg); }
-  75% { transform: rotate(-3deg); }
+.video-overlay{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:rgba(255,255,255,0.25);
 }
 
-/* PLAY button */
-.screen-play {
-  display: flex; align-items: center; gap: 10px;
-  padding: clamp(12px, 2vh, 16px) clamp(28px, 5vw, 40px);
-  border-radius: 50px;
-  font-size: clamp(15px, 2.5vw, 18px); font-weight: 600; color: #fff;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  cursor: pointer; transition: all 300ms ease;
-  backdrop-filter: blur(4px);
+/* ===== APP ===== */
+#app{
+  position:relative;z-index:2;height:100%;width:100%;max-width:100%;
+  display:flex;flex-direction:column;min-height:100vh;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
 }
-.screen-play:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-.screen-play:active { transform: scale(0.96); }
-.play-icon { font-size: clamp(18px, 3vw, 24px); }
 
-/* Screen animations — triggered by JS */
-.screen-compass.spinning { animation: spinFast 0.8s cubic-bezier(0.25,0.1,0.25,1) forwards !important; }
-@keyframes spinFast { 0% { transform: rotate(0deg); } 100% { transform: rotate(720deg); } }
-.screen-compass.converging .dot-north,
-.screen-compass.converging .dot-south,
-.screen-compass.converging .dot-east,
-.screen-compass.converging .dot-west { transform: translate(0, 0) !important; }
-.screen-compass.converging .dot-north { transform: translate(0, 34px) !important; }
-.screen-compass.converging .dot-south { transform: translate(0, -34px) !important; }
-.screen-compass.converging .dot-east { transform: translate(-34px, 0) !important; }
-.screen-compass.converging .dot-west { transform: translate(34px, 0) !important; }
-.screen-inner.burst { transform: scale(20); opacity: 0; transition: transform 500ms cubic-bezier(0.6,0,1,1), opacity 400ms ease; }
+/* ===== PAGE SYSTEM ===== */
+.page{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s cubic-bezier(.22,1,.36,1);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.page.active{opacity:1;pointer-events:auto}
+.page>*{flex-shrink:0}
 
-.screen-sub { font-size: clamp(13px, 2vw, 15px); color: var(--text-muted); text-align: center; letter-spacing: 1px; }
-/* Staggered fade-in for start page text */
-#page-start .screen-label, #page-start .screen-card, #page-start .screen-sub { opacity: 0; transform: translateY(12px); }
-#page-start.active .screen-label { animation: fadeInUp 500ms ease-out 100ms forwards; }
-#page-start.active .screen-card { animation: fadeInUp 500ms ease-out 250ms forwards; }
-#page-start.active .screen-sub { animation: fadeInUp 500ms ease-out 450ms forwards; }
-@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+/* ===== NAV ===== */
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 20px 0;
+  flex-shrink:0;z-index:10;
+}
+@media(min-width:640px){.nav{padding:24px 32px 0}}
+@media(min-width:768px){.nav{padding:24px 48px 0}}
 
-/* ===== Shared Button Styles ===== */
-.btn-primary { padding: 16px 48px; border-radius: var(--radius-xl); font-size: 17px; font-weight: 600; color: #fff; background: var(--gradient-main); box-shadow: var(--shadow-neon); transition: all 200ms ease; position: relative; }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 20px rgba(124,200,216,0.18), 0 0 50px rgba(155,142,196,0.08); }
-.btn-primary:active { transform: scale(0.98); }
+.nav-logo{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;
+  animation:fadeDown .5s cubic-bezier(.22,1,.36,1) both;
+}
+.nav-logo::after{
+  content:'';width:10px;height:10px;border-radius:50%;background:var(--accent);
+}
 
-/* ===== Quiz Page ===== */
-#page-quiz { justify-content: flex-start; padding-top: 80px; }
-.progress-wrap { width: 100%; max-width: 400px; margin-bottom: 32px; }
-.progress-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
-.progress-track { width: 100%; height: 4px; background: var(--bg-card); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--gradient-main); border-radius: 2px; transition: width 300ms ease; box-shadow: none; }
-.module-indicator { font-size: 12px; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; text-align: center; }
-.question-card { width: 100%; max-width: 460px; animation: slideInRight 350ms ease-out; }
-.question-card.reverse { animation: slideInLeft 350ms ease-out; }
-@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
-.question-number { font-size: 13px; color: var(--accent-purple); margin-bottom: 12px; font-weight: 600; }
-.question-text { font-size: 19px; font-weight: 500; line-height: 1.5; margin-bottom: 24px; color: var(--text-primary); }
-.options-grid { display: flex; flex-direction: column; gap: 12px; }
-.option-btn { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-subtle); text-align: left; transition: all 200ms ease; cursor: pointer; min-height: 56px; }
-.option-btn:hover { border-color: rgba(124,200,216,0.4); background: rgba(124,200,216,0.03); }
-.option-btn.selected { border-color: var(--accent-cyan); background: linear-gradient(145deg, rgba(124,200,216,0.08), rgba(155,142,196,0.05)); }
-.option-letter { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--text-muted); transition: all 200ms ease; }
-.option-btn.selected .option-letter { background: var(--accent-cyan); color: #1a1a28; }
-.option-text { font-size: 15px; line-height: 1.6; color: var(--text-secondary); }
-.option-btn.selected .option-text { color: var(--text-primary); }
-.quiz-nav { display: flex; justify-content: space-between; width: 100%; max-width: 460px; margin-top: 24px; gap: 16px; }
-.btn-back, .btn-next { padding: 12px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; transition: all 200ms ease; }
-.btn-back { color: var(--text-muted); border: 1px solid var(--border-subtle); }
-.btn-back:hover { color: var(--text-secondary); border-color: var(--text-muted); }
-.btn-next { color: #fff; background: var(--gradient-main); opacity: 0.4; pointer-events: none; transition: all 200ms ease; }
-.btn-next.enabled { opacity: 1; pointer-events: auto; }
-.btn-next.enabled:hover { background: linear-gradient(135deg, #a99ccf, #8cd2df); }
+.nav-links{
+  display:none;align-items:center;gap:32px;
+}
+@media(min-width:768px){.nav-links{display:flex}}
+.nav-link{
+  font-size:14px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#000;
+  transition:color .2s;cursor:pointer;
+}
+.nav-link:hover{color:var(--accent)}
+.nav-link:nth-child(1){animation:fadeDown .5s .1s cubic-bezier(.22,1,.36,1) both}
+.nav-link:nth-child(2){animation:fadeDown .5s .2s cubic-bezier(.22,1,.36,1) both}
+.nav-link:nth-child(3){animation:fadeDown .5s .3s cubic-bezier(.22,1,.36,1) both}
+.nav-link:nth-child(4){animation:fadeDown .5s .4s cubic-bezier(.22,1,.36,1) both}
 
-/* ===== Result Page ===== */
-#page-result { justify-content: flex-start; padding-top: 40px; padding-bottom: 120px; }
-.result-compact { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; }
-.mode-emoji { font-size: 64px; margin-bottom: 12px; animation: floatIn 600ms ease-out; }
-@keyframes floatIn { from { opacity: 0; transform: translateY(20px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.mode-name { font-size: 30px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.mode-name-en { font-size: 14px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 12px; }
-.mode-tagline { font-size: 16px; color: var(--text-secondary); text-align: center; font-style: italic; line-height: 1.5; margin-bottom: 28px; padding: 0 16px; }
+.hamburger{
+  width:36px;height:36px;border-radius:50%;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  flex-shrink:0;cursor:pointer;
+  animation:fadeDown .5s .5s cubic-bezier(.22,1,.36,1) both;
+}
+.hamburger span{display:block;width:16px;height:2px;background:#fff;border-radius:1px}
 
-/* Dashboard */
-.dashboard { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-.gauge { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.gauge-ring { position: relative; width: 64px; height: 64px; }
-.gauge-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.gauge-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3; }
-.gauge-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 1400ms cubic-bezier(0.4,0,0.2,1); }
-.gauge-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 16px; font-weight: 700; }
-.gauge-label { font-size: 11px; color: var(--text-muted); text-align: center; }
+/* ===== MOBILE MENU ===== */
+.mobile-menu{
+  position:fixed;inset:0;z-index:50;background:#fff;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s cubic-bezier(.22,1,.36,1);
+}
+.mobile-menu.open{opacity:1;pointer-events:auto}
+.mobile-menu .nav{width:100%}
+.mobile-menu-links{
+  display:flex;flex-direction:column;gap:32px;padding:64px 20px 0;
+}
+.mobile-menu-links a{
+  font-size:28px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#000;
+}
+.mobile-menu-cta{
+  margin-top:auto;padding:20px 20px 40px;
+  font-size:20px;font-weight:600;color:var(--accent);
+  display:flex;align-items:center;gap:8px;
+}
+.close-btn{
+  width:36px;height:36px;border-radius:50%;background:#000;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;
+}
 
-/* Core Contradiction */
-.contradiction-card { width: 100%; padding: 20px; border-radius: var(--radius-lg); background: var(--bg-card); border: 1px solid var(--border-subtle); margin-bottom: 24px; }
-.contradiction-card h4 { font-size: 13px; color: var(--accent-coral); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-.contradiction-card p { font-size: 15px; color: var(--text-primary); line-height: 1.6; }
+/* ===== STATS ROW ===== */
+.stats-row{
+  flex:1;display:flex;align-items:center;justify-content:flex-end;
+  padding:0 20px;
+}
+@media(min-width:640px){.stats-row{padding:0 32px}}
+@media(min-width:768px){.stats-row{padding:0 48px}}
 
-/* Expand Button */
-.btn-expand { width: 100%; padding: 14px; border-radius: var(--radius-md); font-size: 15px; color: var(--accent-cyan); border: 1px solid var(--border-glow); background: rgba(124,200,216,0.05); transition: all 200ms ease; margin-bottom: 24px; }
-.btn-expand:hover { background: rgba(124,200,216,0.1); }
+.stats-inner{
+  display:flex;gap:20px;
+}
+@media(min-width:640px){.stats-inner{gap:32px}}
+@media(min-width:768px){.stats-inner{gap:40px}}
+
+.stat{
+  text-align:right;
+  animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;
+}
+.stat:nth-child(1){animation-delay:.24s}
+.stat:nth-child(2){animation-delay:.36s}
+.stat:nth-child(3){animation-delay:.48s}
+
+.stat-num{
+  font-size:clamp(1.5rem,5vw,3.5rem);font-weight:600;color:#000;line-height:.9;
+}
+.stat-num .plus{font-size:.5em;color:var(--accent);vertical-align:super}
+.stat-label{
+  font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#000;
+  white-space:pre-line;line-height:1.3;margin-top:4px;
+}
+@media(min-width:640px){.stat-label{font-size:12px}}
+@media(min-width:768px){.stat-label{font-size:14px}}
+
+/* ===== BOTTOM SECTION ===== */
+.bottom{
+  padding:0 20px 32px;display:flex;flex-direction:column;gap:24px;flex-shrink:0;
+}
+@media(min-width:640px){.bottom{padding:0 32px 40px}}
+@media(min-width:768px){.bottom{padding:0 48px 48px;gap:48px}}
+
+.bottom-row-a{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.tagline{
+  font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#000;
+  max-width:130px;line-height:1.5;
+  animation:fadeUp .6s .6s cubic-bezier(.22,1,.36,1) both;
+}
+@media(min-width:640px){.tagline{font-size:12px;max-width:160px}}
+@media(min-width:768px){.tagline{font-size:14px;max-width:320px}}
+
+.cta-link{
+  font-size:16px;font-weight:600;color:var(--accent);white-space:nowrap;
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  animation:fadeUp .6s .72s cubic-bezier(.22,1,.36,1) both;
+  transition:opacity .2s;
+}
+.cta-link:hover{opacity:.7}
+.cta-link svg{width:18px;height:18px}
+@media(min-width:640px){.cta-link{font-size:20px}.cta-link svg{width:22px;height:22px}}
+@media(min-width:768px){.cta-link{font-size:24px}}
+
+.bottom-row-b{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+}
+@media(min-width:640px){.bottom-row-b{gap:16px}}
+
+.desc-block{
+  width:120px;flex-shrink:0;
+  animation:fadeUp .6s .84s cubic-bezier(.22,1,.36,1) both;
+}
+@media(min-width:640px){.desc-block{width:180px}}
+@media(min-width:768px){.desc-block{width:280px}}
+.desc-block p{
+  font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#000;
+  text-align:left;line-height:1.6;
+}
+@media(min-width:640px){.desc-block p{font-size:12px}}
+@media(min-width:768px){.desc-block p{font-size:14px;text-align:right}}
+
+.heading-block{text-align:right}
+.heading-word{
+  overflow:hidden;
+}
+.heading-word span{
+  display:block;
+  font-size:clamp(2rem,9vw,9rem);font-weight:600;text-transform:uppercase;color:#000;
+  line-height:.88;
+  animation:slideUp .7s cubic-bezier(.22,1,.36,1) both;
+}
+.heading-word:nth-child(1) span{animation-delay:.4s}
+.heading-word:nth-child(2) span{animation-delay:.54s}
+.heading-word:nth-child(3) span{animation-delay:.68s}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(110%)}to{transform:translateY(0)}}
+
+/* ===== QUIZ PAGE ===== */
+#page-quiz{justify-content:center;align-items:center}
+.quiz-container{
+  width:100%;max-width:560px;padding:0 20px;
+  display:flex;flex-direction:column;gap:24px;
+}
+.quiz-progress-wrap{width:100%}
+.quiz-progress-info{
+  display:flex;justify-content:space-between;margin-bottom:10px;
+  font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#000;
+}
+.quiz-progress-track{
+  width:100%;height:3px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden;
+}
+.quiz-progress-fill{
+  height:100%;background:var(--accent);border-radius:2px;transition:width .3s ease;
+}
+.quiz-card{
+  background:rgba(255,255,255,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:20px;padding:28px 24px;
+  box-shadow:0 4px 40px rgba(0,0,0,.06);
+  animation:fadeUp .4s cubic-bezier(.22,1,.36,1);
+}
+.quiz-card.reverse{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) reverse}
+.quiz-q-num{
+  font-size:13px;font-weight:600;color:var(--accent);margin-bottom:12px;letter-spacing:.1em;
+}
+.quiz-q-text{
+  font-size:18px;font-weight:600;line-height:1.5;color:#000;margin-bottom:24px;
+}
+@media(min-width:640px){.quiz-q-text{font-size:20px}}
+.quiz-options{display:flex;flex-direction:column;gap:10px}
+.quiz-opt{
+  display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px 16px;
+  border-radius:12px;background:rgba(0,0,0,.03);text-align:left;
+  transition:all .2s ease;cursor:pointer;min-height:52px;
+}
+.quiz-opt:hover{background:rgba(94,14,215,.06)}
+.quiz-opt.selected{background:rgba(94,14,215,.1);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.quiz-opt-letter{
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:rgba(0,0,0,.5);transition:all .2s;
+}
+.quiz-opt.selected .quiz-opt-letter{background:var(--accent);color:#fff}
+.quiz-opt-text{font-size:14px;line-height:1.6;color:rgba(0,0,0,.7);font-weight:500}
+.quiz-opt.selected .quiz-opt-text{color:#000}
+.quiz-nav-row{
+  display:flex;justify-content:space-between;width:100%;max-width:560px;padding:0 20px;gap:12px;
+}
+.quiz-nav-btn{
+  padding:10px 20px;border-radius:50px;font-size:13px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;transition:all .2s;
+}
+.quiz-nav-back{color:rgba(0,0,0,.5);background:rgba(0,0,0,.04)}
+.quiz-nav-back:hover{color:#000;background:rgba(0,0,0,.08)}
+.quiz-nav-next{color:#fff;background:var(--accent);opacity:.3;pointer-events:none}
+.quiz-nav-next.enabled{opacity:1;pointer-events:auto}
+.quiz-nav-next.enabled:hover{opacity:.85}
+
+/* ===== RESULT PAGE ===== */
+#page-result{align-items:center;padding-bottom:120px}
+.result-container{
+  width:100%;max-width:640px;padding:0 20px;
+  display:flex;flex-direction:column;align-items:center;gap:32px;
+}
+@media(min-width:768px){.result-container{gap:48px}}
+
+.result-stats{
+  display:flex;gap:20px;justify-content:center;flex-wrap:wrap;width:100%;
+  padding-top:24px;
+}
+@media(min-width:640px){.result-stats{gap:32px}}
+@media(min-width:768px){.result-stats{gap:48px}}
+
+.result-stat{
+  text-align:center;
+  animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;
+}
+.result-stat:nth-child(1){animation-delay:.2s}
+.result-stat:nth-child(2){animation-delay:.32s}
+.result-stat:nth-child(3){animation-delay:.44s}
+.result-stat:nth-child(4){animation-delay:.56s}
+
+.result-stat-num{
+  font-size:clamp(2rem,6vw,3.5rem);font-weight:600;color:#000;line-height:.9;
+}
+.result-stat-num .plus{font-size:.5em;color:var(--accent);vertical-align:super}
+.result-stat-label{
+  font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#000;
+  margin-top:4px;
+}
+@media(min-width:640px){.result-stat-label{font-size:12px}}
+
+.result-heading{
+  width:100%;text-align:center;
+}
+.result-emoji{
+  font-size:48px;margin-bottom:12px;animation:fadeUp .5s .6s cubic-bezier(.22,1,.36,1) both;
+}
+.result-mode-name{
+  overflow:hidden;margin-bottom:4px;
+}
+.result-mode-name span{
+  display:block;
+  font-size:clamp(2rem,8vw,6rem);font-weight:700;text-transform:uppercase;color:#000;line-height:1;
+  animation:slideUp .7s .7s cubic-bezier(.22,1,.36,1) both;
+}
+.result-mode-en{
+  font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.4);
+  animation:fadeUp .5s .9s cubic-bezier(.22,1,.36,1) both;
+}
+.result-tagline{
+  font-size:14px;font-weight:500;color:rgba(0,0,0,.6);line-height:1.6;text-align:center;
+  max-width:400px;
+  animation:fadeUp .5s 1s cubic-bezier(.22,1,.36,1) both;
+}
+
+.result-contradiction{
+  width:100%;padding:20px;border-radius:16px;
+  background:rgba(94,14,215,.05);text-align:center;
+}
+.result-contradiction h4{
+  font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;
+}
+.result-contradiction p{
+  font-size:15px;font-weight:600;color:#000;line-height:1.6;
+}
+
+.result-expand-btn{
+  padding:12px 28px;border-radius:50px;
+  font-size:13px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--accent);background:rgba(94,14,215,.06);
+  transition:all .2s;cursor:pointer;
+}
+.result-expand-btn:hover{background:rgba(94,14,215,.12)}
 
 /* Full Report */
-.result-full { width: 100%; max-width: 460px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 600ms cubic-bezier(0.4,0,0.2,1), opacity 400ms ease; }
-.result-full.expanded { max-height: 12000px; opacity: 1; }
-.report-section { margin-bottom: 28px; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-card); border: 1px solid var(--border-subtle); }
-.report-section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); letter-spacing: 0.5px; }
-.report-section h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
-.report-section p { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
-.report-section .highlight { color: var(--accent-cyan); }
-.superpower-item, .trap-item, .strategy-item { margin-bottom: 16px; }
-.superpower-item:last-child, .trap-item:last-child, .strategy-item:last-child { margin-bottom: 0; }
-.power-icon, .trap-icon, .strategy-icon { font-size: 20px; margin-right: 6px; }
-.signal-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-top: 6px; background: rgba(201,128,128,0.15); color: var(--accent-coral); }
-.action-tag { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-top: 8px; background: rgba(124,200,216,0.1); color: var(--accent-cyan); }
-.relation-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.relation-table th, .relation-table td { padding: 10px 12px; font-size: 13px; line-height: 1.5; text-align: left; border-bottom: 1px solid var(--border-subtle); }
-.relation-table th { color: var(--text-muted); font-weight: 500; font-size: 12px; }
-.relation-table td { color: var(--text-secondary); }
-
-/* Result Actions */
-.result-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, transparent, var(--bg-deep) 40%); display: flex; gap: 12px; justify-content: center; z-index: 10; max-width: 720px; margin: 0 auto; }
-.btn-secondary { padding: 14px 28px; border-radius: var(--radius-xl); font-size: 15px; font-weight: 500; color: var(--text-secondary); border: 1px solid var(--border-subtle); transition: all 200ms ease; }
-.btn-secondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
-
-/* ===== Scrollbar ===== */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
-
-/* ===== Mobile ===== */
-@media (max-width: 480px) {
-  .mode-name { font-size: 25px; }
-  .question-text { font-size: 17px; }
-  .option-btn { padding: 14px; min-height: 52px; }
-  .option-text { font-size: 14px; }
-  .dashboard { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .gauge-ring { width: 52px; height: 52px; }
-  .gauge-value { font-size: 14px; }
-  .page { padding: 20px 16px; }
-  #page-quiz { padding-top: 60px; }
+.result-full{
+  width:100%;max-width:560px;max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .6s cubic-bezier(.22,1,.36,1),opacity .4s ease;
 }
-@media (max-width: 360px) {
-  .screen-card { width: 88vw; border-radius: 14px; }
-  .screen-compass { width: 72%; }
+.result-full.expanded{max-height:20000px;opacity:1}
+.report-section{
+  margin-bottom:24px;padding:24px;border-radius:16px;
+  background:rgba(255,255,255,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 4px 30px rgba(0,0,0,.04);
 }
-@media (min-width: 768px) {
-  .question-text { font-size: 20px; }
-  .option-text { font-size: 16px; }
+.report-section h3{
+  font-size:14px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#000;margin-bottom:16px;
 }
+.report-section h4{font-size:14px;font-weight:600;margin-bottom:8px;color:#000}
+.report-section p{font-size:13px;line-height:1.8;color:rgba(0,0,0,.7);font-weight:500}
+.report-section .highlight{color:var(--accent);font-weight:600}
+.superpower-item,.trap-item,.strategy-item{margin-bottom:16px}
+.superpower-item:last-child,.trap-item:last-child,.strategy-item:last-child{margin-bottom:0}
+.power-icon,.trap-icon,.strategy-icon{font-size:18px;margin-right:6px}
+.signal-tag{
+  display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;margin-top:6px;
+  background:rgba(94,14,215,.08);color:var(--accent);font-weight:600;
+}
+.action-tag{
+  display:inline-block;padding:6px 12px;border-radius:12px;font-size:12px;margin-top:8px;
+  background:rgba(0,0,0,.05);color:#000;font-weight:600;
+}
+.relation-table{width:100%;border-collapse:collapse;margin-top:8px}
+.relation-table th,.relation-table td{padding:10px 12px;font-size:12px;line-height:1.5;text-align:left;border-bottom:1px solid rgba(0,0,0,.06)}
+.relation-table th{color:rgba(0,0,0,.4);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.relation-table td{color:rgba(0,0,0,.7);font-weight:500}
+
+/* Result Actions (fixed bottom) */
+.result-actions{
+  position:fixed;bottom:0;left:0;right:0;padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.9) 30%);
+  display:flex;gap:12px;justify-content:center;z-index:10;
+}
+.result-actions button{
+  padding:14px 28px;border-radius:50px;font-size:14px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.btn-retake{color:rgba(0,0,0,.6);background:rgba(0,0,0,.05)}
+.btn-retake:hover{background:rgba(0,0,0,.1)}
+.btn-save{color:#fff;background:var(--accent)}
+.btn-save:hover{opacity:.85}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25)}
+
+/* ===== UTILITY ===== */
+.hidden-vis{visibility:hidden}
 </style>
 </head>
 <body>
-<canvas id="particleCanvas"></canvas>
+
+<video id="bgVideo" autoplay muted loop playsinline
+  src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260517_222138_3e3205be-3364-417b-a64a-bfe087acbec4.mp4">
+</video>
+<div class="video-overlay"></div>
+
 <div id="app">
-  <!-- Loading -->
-  <section id="page-loading" class="page active"></section>
-  <!-- Start -->
-  <section id="page-start" class="page">
-    <p class="screen-label">职场能量罗盘</p>
-    <div class="screen-card" id="screenCard">
-      <div class="screen-inner" id="screenInner">
-        <div class="screen-compass" id="screenCompass">
-          <svg viewBox="0 0 200 200">
-            <defs>
-              <radialGradient id="cg" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.06)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient>
-            </defs>
-            <!-- Outer glow ring -->
-            <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(155,142,196,0.06)" stroke-width="0.5"/>
-            <!-- Tick ring: 72 ticks at 5° intervals -->
-            <g id="ticks" stroke="rgba(255,255,255,0.12)" stroke-width="0.4">
-              <g id="tickGroup"></g>
-            </g>
-            <!-- Outer ring -->
-            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.6"/>
-            <!-- Major tick ring (12 ticks at 30°) -->
-            <g id="majorTicks" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"></g>
-            <!-- Mid ring -->
-            <circle cx="100" cy="100" r="78" fill="none" stroke="rgba(124,200,216,0.08)" stroke-width="0.5"/>
-            <!-- Inner ring -->
-            <circle cx="100" cy="100" r="65" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.4"/>
-            <!-- Compass rose: 8-pointed star -->
-            <g stroke="rgba(255,255,255,0.06)" stroke-width="0.4" fill="none">
-              <polygon points="100,12 108,92 188,100 108,108 100,188 92,108 12,100 92,92"/>
-              <polygon points="100,30 104,96 170,100 104,104 100,170 96,104 30,100 96,96" stroke="rgba(255,255,255,0.04)"/>
-            </g>
-            <!-- Cardinal lines -->
-            <g stroke="rgba(255,255,255,0.05)" stroke-width="0.4">
-              <line x1="100" y1="6" x2="100" y2="194"/>
-              <line x1="6" y1="100" x2="194" y2="100"/>
-              <line x1="34" y1="34" x2="166" y2="166"/>
-              <line x1="166" y1="34" x2="34" y2="166"/>
-            </g>
-            <!-- Inner rose ring -->
-            <circle cx="100" cy="100" r="48" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.4"/>
-            <!-- Center hub -->
-            <circle cx="100" cy="100" r="10" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.6"/>
-            <circle cx="100" cy="100" r="6" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
-            <circle cx="100" cy="100" r="2.5" fill="rgba(255,255,255,0.25)"/>
-            <!-- Cardinal dots (colored, parallax) -->
-            <circle cx="100" cy="12" r="3.5" fill="#9b8ec4" class="dot-north" data-depth="0.7" style="filter: drop-shadow(0 0 4px rgba(155,142,196,0.5))"/>
-            <circle cx="188" cy="100" r="3.5" fill="#7cc8d8" class="dot-east" data-depth="0.5" style="filter: drop-shadow(0 0 4px rgba(124,200,216,0.5))"/>
-            <circle cx="100" cy="188" r="3.5" fill="#c9a0b8" class="dot-south" data-depth="0.7" style="filter: drop-shadow(0 0 4px rgba(201,160,184,0.5))"/>
-            <circle cx="12" cy="100" r="3.5" fill="#c9b878" class="dot-west" data-depth="0.5" style="filter: drop-shadow(0 0 4px rgba(201,184,120,0.5))"/>
-            <!-- Secondary dots at intercardinal positions -->
-            <circle cx="162" cy="38" r="1.5" fill="rgba(155,142,196,0.5)" data-depth="0.3"/>
-            <circle cx="162" cy="162" r="1.5" fill="rgba(124,200,216,0.5)" data-depth="0.3"/>
-            <circle cx="38" cy="162" r="1.5" fill="rgba(201,160,184,0.5)" data-depth="0.3"/>
-            <circle cx="38" cy="38" r="1.5" fill="rgba(201,184,120,0.5)" data-depth="0.3"/>
-          </svg>
-        </div>
-        <button class="screen-play" id="btnPlay" onclick="startQuiz()">
-          <span class="play-icon">▶</span>
-          <span>开始测评</span>
-        </button>
+
+  <!-- ========== START PAGE ========== -->
+  <section id="page-start" class="page active">
+    <nav class="nav">
+      <div class="nav-logo" onclick="resetQuiz()" title="首页"></div>
+      <div class="nav-links">
+        <span class="nav-link">模块一</span>
+        <span class="nav-link">模块二</span>
+        <span class="nav-link">模块三</span>
+        <span class="nav-link">模块四</span>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <div class="stats-row">
+      <div class="stats-inner">
+        <div class="stat"><div class="stat-num"><span class="plus">+</span>24</div><div class="stat-label">精⼼设计<br>的题目</div></div>
+        <div class="stat"><div class="stat-num"><span class="plus">+</span>8</div><div class="stat-label">分钟完成<br>测评</div></div>
+        <div class="stat"><div class="stat-num"><span class="plus">+</span>8</div><div class="stat-label">种职场<br>生存模式</div></div>
       </div>
     </div>
-    <p class="screen-sub">发现你的职场生存模式</p>
+
+    <div class="bottom">
+      <div class="bottom-row-a">
+        <p class="tagline">发现你的<br>职场生存模式<br>找到核心矛盾</p>
+        <button class="cta-link" onclick="startQuiz()">
+          开始测评
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </button>
+      </div>
+      <div class="bottom-row-b">
+        <div class="desc-block"><p>职场能量罗盘 · 基于行为心理学 · 找到你的核心生存策略</p></div>
+        <div class="heading-block">
+          <div class="heading-word"><span>发现</span></div>
+          <div class="heading-word"><span>你的</span></div>
+          <div class="heading-word"><span>模式</span></div>
+        </div>
+      </div>
+    </div>
   </section>
-  <!-- Quiz -->
+
+  <!-- ========== QUIZ PAGE ========== -->
   <section id="page-quiz" class="page">
-    <div class="progress-wrap">
-      <div class="progress-info"><span id="progressText">1 / 24</span><span id="moduleLabel" class="module-indicator">模块一：能量来源</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:4.2%"></div></div>
+    <nav class="nav" style="width:100%">
+      <div class="nav-logo" onclick="resetQuiz()" title="首页"></div>
+      <div class="nav-links">
+        <span class="nav-link" style="opacity:.4">模块一</span>
+        <span class="nav-link" style="opacity:.4">模块二</span>
+        <span class="nav-link" style="opacity:.4">模块三</span>
+        <span class="nav-link" style="opacity:.4">模块四</span>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <div class="quiz-container">
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-info"><span id="progressText">1 / 24</span><span id="moduleLabel">模块一：能量来源</span></div>
+        <div class="quiz-progress-track"><div class="quiz-progress-fill" id="progressFill" style="width:4.2%"></div></div>
+      </div>
+      <div class="quiz-card" id="questionCard">
+        <div class="quiz-q-num" id="questionNumber">Q1</div>
+        <h3 class="quiz-q-text" id="questionText"></h3>
+        <div class="quiz-options" id="optionsGrid"></div>
+      </div>
     </div>
-    <div class="question-card" id="questionCard">
-      <div class="question-number" id="questionNumber">Q1</div>
-      <h3 class="question-text" id="questionText"></h3>
-      <div class="options-grid" id="optionsGrid"></div>
-    </div>
-    <div class="quiz-nav">
-      <button class="btn-back" id="btnBack" onclick="prevQuestion()">← 上一题</button>
-      <button class="btn-next" id="btnNext" onclick="nextQuestion()">下一题 →</button>
+
+    <div class="quiz-nav-row" style="margin-top:24px">
+      <button class="quiz-nav-btn quiz-nav-back" id="btnBack" onclick="prevQuestion()">← 上一题</button>
+      <button class="quiz-nav-btn quiz-nav-next" id="btnNext" onclick="nextQuestion()">下一题 →</button>
     </div>
   </section>
-  <!-- Result -->
+
+  <!-- ========== RESULT PAGE ========== -->
   <section id="page-result" class="page">
-    <div class="result-compact" id="resultCompact"></div>
-    <div class="result-full collapsed" id="resultFull"></div>
+    <nav class="nav" style="width:100%">
+      <div class="nav-logo" onclick="resetQuiz()" title="首页"></div>
+      <div style="flex:1"></div>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <div class="result-container" id="resultCompact">
+      <div class="result-stats" id="resultStats"></div>
+      <div class="result-heading">
+        <div class="result-emoji" id="resultEmoji"></div>
+        <div class="result-mode-name"><span id="resultName"></span></div>
+        <div class="result-mode-en" id="resultNameEn"></div>
+      </div>
+      <p class="result-tagline" id="resultTagline"></p>
+      <div class="result-contradiction" id="resultContradiction"></div>
+      <button class="result-expand-btn" id="btnExpand" onclick="toggleReport()">查看完整报告 ↓</button>
+      <div class="result-full collapsed" id="resultFull"></div>
+    </div>
+
     <div class="result-actions">
-      <button class="btn-secondary" onclick="resetQuiz()">重新测评</button>
-      <button class="btn-primary" onclick="saveResult()">保存结果</button>
+      <button class="btn-retake" onclick="resetQuiz()">重新测评</button>
+      <button class="btn-save" onclick="saveResult()">保存结果</button>
     </div>
   </section>
+
+  <!-- ========== MOBILE MENU ========== -->
+  <div class="mobile-menu" id="mobileMenu">
+    <nav class="nav">
+      <div class="nav-logo" onclick="toggleMenu()"></div>
+      <button class="close-btn" onclick="toggleMenu()" aria-label="关闭">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </nav>
+    <div class="mobile-menu-links">
+      <a href="#" onclick="toggleMenu()">模块一</a>
+      <a href="#" onclick="toggleMenu()">模块二</a>
+      <a href="#" onclick="toggleMenu()">模块三</a>
+      <a href="#" onclick="toggleMenu()">模块四</a>
+    </div>
+    <div class="mobile-menu-cta" onclick="toggleMenu();startQuiz()">
+      开始测评
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// ==================== DATA ====================
+// ==================== DATA (preserved from original) ====================
 const QUESTIONS = [
-  // 模块一：能量来源 Q1-Q6 (index 0-5)
   {id:1, module:1, text:'周一早晨醒来，想到要上班，你的第一反应通常是？', options:[
     {l:'A', t:'"今天有什么新挑战在等我？"——想到可能的成就感就精神了'},
     {l:'B', t:'"又要面对那些破事了"——需要做一下心理建设才能起床'},
@@ -377,7 +584,6 @@ const QUESTIONS = [
     {l:'B', t:'纯粹因为热爱而做的事情，哪怕不产生任何经济价值'},
     {l:'C', t:'和朋友/家人在一起，维护重要的人际关系'},
     {l:'D', t:'独处、阅读、思考、运动——给自己充电'}]},
-  // 模块二：压力应对 Q7-Q12 (index 6-11)
   {id:7, module:2, text:'当你发现自己的工作量越来越大、快要扛不住时，你会？', options:[
     {l:'A', t:'直接找领导谈：要么加人、要么加钱、要么减活'},
     {l:'B', t:'先自己扛一扛，但如果发现根本性问题，会推动流程优化'},
@@ -408,7 +614,6 @@ const QUESTIONS = [
     {l:'B', t:'"做正确的事，而非容易的事"——哪怕代价更大'},
     {l:'C', t:'"人脉就是钱脉"——关系到位了，事情就好办'},
     {l:'D', t:'"流水不争先，争的是滔滔不绝"——长期主义'}]},
-  // 模块三：关系模式 Q13-Q18 (index 12-17)
   {id:13, module:3, text:'公司团建对你来说是？', options:[
     {l:'A', t:'展示自己、拓展人脉的好机会'},
     {l:'B', t:'看情况——有意义的团建可以，纯尬的活动不如不去'},
@@ -439,7 +644,6 @@ const QUESTIONS = [
     {l:'B', t:'周围人都不理解我为什么这么在意这件事'},
     {l:'C', t:'团队里没有真正可以交心的人，都是表面客气'},
     {l:'D', t:'被频繁拉入各种群聊和会议，但没有任何有深度的交流'}]},
-  // 模块四：意义追寻 Q19-Q24 (index 18-23)
   {id:19, module:4, text:'如果财务自由了，你还会工作吗？', options:[
     {l:'A', t:'会，但要做得更"高级"——创业、投资、做更有影响力的事'},
     {l:'B', t:'会，但只做自己真正相信的事情，哪怕很小众'},
@@ -635,7 +839,6 @@ const MODES = {
     dashboard:{drive:65,stress:55,relation:45,meaning:90},energyTip:'你的意义感是八种模式中最高的之一，但风险是"在没人看见的地方燃烧"。本周找一个你信任的人，完整讲述你正在做的"长期投入"。'}
 };
 
-// Mode type signatures for Step 4 (sub-type matching)
 const SIGNATURES = {
   A1:[{q:11,exp:'A',w:2},{q:18,exp:'A',w:2},{q:19,exp:'A',w:1},{q:0,exp:'A',w:1},{q:4,exp:'A',w:1},{q:22,exp:'A',w:1}],
   C1:[{q:9,exp:'A',w:2},{q:5,exp:'A',w:1},{q:2,exp:'A',w:1},{q:20,exp:'A',w:1},{q:15,exp:'A',w:1},{q:1,exp:'A',w:1}],
@@ -647,106 +850,15 @@ const SIGNATURES = {
   C2:[{q:6,exp:'D',w:1},{q:7,exp:'D',w:2},{q:8,exp:'D',w:1},{q:11,exp:'D',w:2},{q:13,exp:'D',w:1},{q:15,exp:'D',w:1}]
 };
 
-// Q24 (index 23) quadrant routing
 const Q24_ROUTING = {
-  A: ['A1','C1'], // Quadrant I: 外+主
-  B: ['A2','D2'], // Quadrant II: 内+主
-  C: ['B1','D1'], // Quadrant III: 外+适
-  D: ['B2','C2']  // Quadrant IV: 内+适
+  A: ['A1','C1'], B: ['A2','D2'], C: ['B1','D1'], D: ['B2','C2']
 };
 
 const MODULE_NAMES = ['模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块一：能量来源','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块二：压力应对','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块三：关系模式','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻','模块四：意义追寻'];
 
-// ==================== PARTICLE ENGINE ====================
-class ParticleEngine {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.particles = [];
-    this.mouse = { x: -9999, y: -9999 };
-    this.colorBias = { r: 155, g: 142, b: 196 }; // muted purple
-    this.resize();
-    this.init();
-    this.bindEvents();
-    this.animate();
-  }
-  resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    this.canvas.width = this.width * dpr;
-    this.canvas.height = this.height * dpr;
-    this.canvas.style.width = this.width + 'px';
-    this.canvas.style.height = this.height + 'px';
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.pCount = this.width < 768 ? 60 : 120;
-    this.connectDist = this.width < 768 ? 80 : 120;
-  }
-  init() {
-    this.particles = [];
-    for (let i = 0; i < this.pCount; i++) {
-      this.particles.push({
-        x: Math.random() * this.width,
-        y: Math.random() * this.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.2 + 0.05
-      });
-    }
-  }
-  bindEvents() {
-    window.addEventListener('resize', () => { this.resize(); this.init(); });
-    document.addEventListener('mousemove', e => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; });
-    document.addEventListener('touchmove', e => { if (e.touches[0]) { this.mouse.x = e.touches[0].clientX; this.mouse.y = e.touches[0].clientY; } }, {passive:true});
-  }
-  setColorBias(r, g, b) { this.colorBias = { r, g, b }; }
-  animate() {
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    const {r,g,b} = this.colorBias;
-    for (let i = 0; i < this.particles.length; i++) {
-      const p = this.particles[i];
-      // Mouse repulsion
-      const dx = p.x - this.mouse.x, dy = p.y - this.mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 80) {
-        const force = (80 - dist) / 80 * 0.03;
-        p.vx += (dx / dist) * force;
-        p.vy += (dy / dist) * force;
-      }
-      // Friction
-      p.vx *= 0.999; p.vy *= 0.999;
-      p.x += p.vx; p.y += p.vy;
-      // Wrap
-      if (p.x < 0) p.x = this.width; if (p.x > this.width) p.x = 0;
-      if (p.y < 0) p.y = this.height; if (p.y > this.height) p.y = 0;
-      // Draw
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(${r},${g},${b},${p.opacity})`;
-      this.ctx.fill();
-      // Connect nearby
-      for (let j = i + 1; j < this.particles.length; j++) {
-        const p2 = this.particles[j];
-        const dx2 = p.x - p2.x, dy2 = p.y - p2.y;
-        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        if (dist2 < this.connectDist) {
-          this.ctx.beginPath();
-          this.ctx.moveTo(p.x, p.y);
-          this.ctx.lineTo(p2.x, p2.y);
-          this.ctx.strokeStyle = `rgba(${r},${g},${b},${0.025 * (1 - dist2 / this.connectDist)})`;
-          this.ctx.lineWidth = 0.5;
-          this.ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(() => this.animate());
-  }
-}
-
 // ==================== APP STATE ====================
 const state = {
-  page: 'loading',
+  page: 'start',
   currentQ: 0,
   answers: new Array(24).fill(null),
   direction: 1,
@@ -754,9 +866,7 @@ const state = {
   reportExpanded: false
 };
 
-// ==================== DOM REFS ====================
 const $pages = {
-  loading: document.getElementById('page-loading'),
   start: document.getElementById('page-start'),
   quiz: document.getElementById('page-quiz'),
   result: document.getElementById('page-result')
@@ -770,150 +880,52 @@ const $questionText = document.getElementById('questionText');
 const $optionsGrid = document.getElementById('optionsGrid');
 const $btnBack = document.getElementById('btnBack');
 const $btnNext = document.getElementById('btnNext');
-const $resultCompact = document.getElementById('resultCompact');
-const $resultFull = document.getElementById('resultFull');
 
 // ==================== NAVIGATION ====================
 function navigateTo(page) {
-  Object.keys($pages).forEach(k => {
-    $pages[k].classList.remove('active');
-  });
+  Object.keys($pages).forEach(k => $pages[k].classList.remove('active'));
   $pages[page].classList.add('active');
   state.page = page;
   if (page === 'result') {
-    $resultFull.classList.remove('expanded');
-    $resultFull.classList.add('collapsed');
+    const full = document.getElementById('resultFull');
+    if (full) { full.classList.remove('expanded'); full.classList.add('collapsed'); }
     state.reportExpanded = false;
   }
 }
 
-// ==================== PARTICLE COLOR THEMES ====================
-function setParticleTheme(page) {
-  if (!window._particles) return;
-  const themes = {
-    loading: [155,142,196],
-    start: [155,142,196],
-    quiz: [124,200,216],
-    result: [124,200,216]
-  };
-  const [r,g,b] = themes[page] || [155,142,196];
-  window._particles.setColorBias(r,g,b);
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
 }
 
-// ==================== START PAGE INTERACTIONS ====================
-let _compassParallaxBound = false;
-let _magnetBound = false;
-
-function setupStartInteractions() {
-  const compass = document.getElementById('screenCompass');
-  const btn = document.getElementById('btnPlay');
-  if (!compass || !btn) return;
-
-  // Compass parallax: dots shift toward cursor
-  if (!_compassParallaxBound) {
-    document.addEventListener('mousemove', e => {
-      if (state.page !== 'start') return;
-      const rect = compass.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (e.clientX - cx) / (rect.width / 2);
-      const dy = (e.clientY - cy) / (rect.height / 2);
-      const c = (v, max) => Math.max(-max, Math.min(max, v));
-      compass.querySelectorAll('[data-depth]').forEach(dot => {
-        const depth = parseFloat(dot.dataset.depth);
-        dot.style.transform = `translate(${c(dx*depth*10,10)}px, ${c(dy*depth*10,10)}px)`;
-      });
-    });
-    _compassParallaxBound = true;
-  }
-
-  // Magnetic button (subtle)
-  if (!_magnetBound && btn) {
-    btn.addEventListener('mousemove', e => {
-      const rect = btn.getBoundingClientRect();
-      const bx = rect.left + rect.width / 2, by = rect.top + rect.height / 2;
-      btn.style.transform = `translate(${(e.clientX-bx)/(rect.width/2)*3}px, ${(e.clientY-by)/(rect.height/2)*2}px)`;
-    });
-    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
-    _magnetBound = true;
-  }
-}
-
-// Boot interactions
-window.addEventListener('DOMContentLoaded', () => { setTimeout(setupStartInteractions, 400); });
-
-// ==================== GENERATE COMPASS TICKS ====================
-function generateTicks() {
-  const tickGroup = document.getElementById('tickGroup');
-  const majorTickGroup = document.getElementById('majorTicks');
-  if (!tickGroup || !majorTickGroup) return;
-  let h = '';
-  for (let i = 0; i < 72; i++) { h += `<line x1="100" y1="12" x2="100" y2="16" transform="rotate(${i*5} 100 100)"/>`; }
-  tickGroup.innerHTML = h;
-  h = '';
-  for (let i = 0; i < 12; i++) { h += `<line x1="100" y1="12" x2="100" y2="21" transform="rotate(${i*30} 100 100)"/>`; }
-  majorTickGroup.innerHTML = h;
-}
-
-// ==================== INIT ====================
-function init() {
-  const canvas = document.getElementById('particleCanvas');
-  window._particles = new ParticleEngine(canvas);
-  generateTicks();
-  setTimeout(() => {
-    navigateTo('start');
-    setParticleTheme('start');
-  }, 800);
-}
-
-// ==================== START QUIZ — with animation ====================
+// ==================== START / RESET ====================
 function startQuiz() {
-  const compass = document.getElementById('screenCompass');
-  const inner = document.getElementById('screenInner');
-  if (!compass || !inner) { beginQuiz(); return; }
-
-  // Phase 1: Fast spin
-  compass.classList.add('spinning');
-
-  // Phase 2: Dots converge (overlaps slightly with spin end)
-  setTimeout(() => {
-    compass.classList.add('converging');
-  }, 600);
-
-  // Phase 3: Screen bursts
-  setTimeout(() => {
-    inner.classList.add('burst');
-  }, 1000);
-
-  // Phase 4: Navigate to quiz
-  setTimeout(() => {
-    beginQuiz();
-  }, 1400);
-}
-
-function beginQuiz() {
+  document.getElementById('mobileMenu').classList.remove('open');
   state.currentQ = 0;
   state.answers = new Array(24).fill(null);
   state.direction = 1;
-  // Reset screen animation classes for next visit
-  const compass = document.getElementById('screenCompass');
-  const inner = document.getElementById('screenInner');
-  if (compass) { compass.classList.remove('spinning','converging'); }
-  if (inner) { inner.classList.remove('burst'); }
   navigateTo('quiz');
-  setParticleTheme('quiz');
   renderQuestion();
 }
 
-// ==================== RENDER QUESTION ====================
+function resetQuiz() {
+  document.getElementById('mobileMenu').classList.remove('open');
+  state.currentQ = 0;
+  state.answers = new Array(24).fill(null);
+  state.result = null;
+  state.reportExpanded = false;
+  const full = document.getElementById('resultFull');
+  if (full) { full.classList.remove('expanded'); full.classList.add('collapsed'); }
+  navigateTo('start');
+}
+
+// ==================== QUESTION RENDERING ====================
 function renderQuestion() {
   const i = state.currentQ;
   const q = QUESTIONS[i];
   const animClass = state.direction > 0 ? '' : 'reverse';
-  $questionCard.className = 'question-card ' + animClass;
-  // Force re-trigger animation
+  $questionCard.className = 'quiz-card ' + animClass;
   void $questionCard.offsetWidth;
-  $questionCard.className = 'question-card ' + animClass;
+  $questionCard.className = 'quiz-card ' + animClass;
 
   $questionNumber.textContent = 'Q' + q.id;
   $questionText.textContent = q.text;
@@ -922,68 +934,44 @@ function renderQuestion() {
   let html = '';
   q.options.forEach(opt => {
     const sel = state.answers[i] === opt.l ? ' selected' : '';
-    html += `<button class="option-btn${sel}" data-letter="${opt.l}" onclick="selectAnswer('${opt.l}')">
-      <span class="option-letter">${opt.l}</span>
-      <span class="option-text">${opt.t}</span>
-    </button>`;
+    html += '<button class="quiz-opt' + sel + '" data-letter="' + opt.l + '" onclick="selectAnswer(\'' + opt.l + '\')">'
+      + '<span class="quiz-opt-letter">' + opt.l + '</span>'
+      + '<span class="quiz-opt-text">' + opt.t + '</span></button>';
   });
   $optionsGrid.innerHTML = html;
 
-  // Progress
   const pct = ((i + 1) / 24 * 100);
   $progressFill.style.width = pct + '%';
   $progressText.textContent = (i + 1) + ' / 24';
 
-  // Nav buttons
   $btnBack.style.visibility = i === 0 ? 'hidden' : 'visible';
-  const hasAnswer = state.answers[i] !== null;
-  updateNextButton(hasAnswer);
+  updateNextButton(state.answers[i] !== null);
 }
 
 function updateNextButton(enabled) {
-  if (enabled) {
-    $btnNext.classList.add('enabled');
-  } else {
-    $btnNext.classList.remove('enabled');
-  }
+  if (enabled) { $btnNext.classList.add('enabled'); }
+  else { $btnNext.classList.remove('enabled'); }
 }
 
-// ==================== SELECT ANSWER ====================
+// ==================== ANSWER SELECTION ====================
 function selectAnswer(letter) {
   const i = state.currentQ;
   state.answers[i] = letter;
-  // Update option buttons
-  const btns = $optionsGrid.querySelectorAll('.option-btn');
+  const btns = $optionsGrid.querySelectorAll('.quiz-opt');
   btns.forEach(b => {
     b.classList.remove('selected');
     if (b.dataset.letter === letter) b.classList.add('selected');
   });
   updateNextButton(true);
-
-  // Auto-advance after short delay (except last question)
-  if (i < 23) {
-    setTimeout(() => { nextQuestion(); }, 300);
-  } else {
-    // Last question: calculate result after selection
-    setTimeout(() => { calculateAndShow(); }, 400);
-  }
+  if (i < 23) { setTimeout(() => { nextQuestion(); }, 300); }
+  else { setTimeout(() => { calculateAndShow(); }, 400); }
 }
 
-// ==================== NAVIGATION ====================
 function nextQuestion() {
-  if (state.currentQ < 23) {
-    state.direction = 1;
-    state.currentQ++;
-    renderQuestion();
-  }
+  if (state.currentQ < 23) { state.direction = 1; state.currentQ++; renderQuestion(); }
 }
-
 function prevQuestion() {
-  if (state.currentQ > 0) {
-    state.direction = -1;
-    state.currentQ--;
-    renderQuestion();
-  }
+  if (state.currentQ > 0) { state.direction = -1; state.currentQ--; renderQuestion(); }
 }
 
 // Keyboard support
@@ -999,32 +987,19 @@ document.addEventListener('keydown', e => {
 // ==================== SCORING ====================
 function calculateResult() {
   const ans = state.answers;
-  // Step 1: Raw counts
   let externalRaw = 0, internalRaw = 0;
-  let m1Act = 0, m1Adp = 0;
-  let m2Act = 0, m2Adp = 0;
-  let m3Act = 0, m3Adp = 0;
-  let m4Act = 0, m4Adp = 0;
-
+  let m1Act = 0, m1Adp = 0, m2Act = 0, m2Adp = 0, m3Act = 0, m3Adp = 0, m4Act = 0, m4Adp = 0;
   for (let i = 0; i < 24; i++) {
     const ch = ans[i];
-    // External/Internal
-    if (ch === 'A' || ch === 'C') externalRaw++;
-    else internalRaw++; // B or D
-
-    // Active/Adaptive per module
+    if (ch === 'A' || ch === 'C') externalRaw++; else internalRaw++;
     const isAct = (ch === 'A' || ch === 'B');
     if (i < 6) { if (isAct) m1Act++; else m1Adp++; }
     else if (i < 12) { if (isAct) m2Act++; else m2Adp++; }
     else if (i < 18) { if (isAct) m3Act++; else m3Adp++; }
     else { if (isAct) m4Act++; else m4Adp++; }
   }
-
-  // Step 2: Weighted scores
   const activeScore = m2Act * 3 + m1Act + m3Act + m4Act;
   const adaptiveScore = m2Adp * 3 + m1Adp + m3Adp + m4Adp;
-
-  // Step 3: Quadrant
   const extRatio = externalRaw / 24;
   const actRatio = activeScore / 36;
 
@@ -1034,199 +1009,140 @@ function calculateResult() {
   else if (extRatio >= 0.5 && actRatio < 0.5) candidates = ['B1','D1'];
   else candidates = ['B2','C2'];
 
-  // Step 4: Q24 routing + signature matching
   const q24 = ans[23];
   const q24Candidates = Q24_ROUTING[q24] || candidates;
-  // Intersection of quadrant candidates and Q24 candidates
   let finalCandidates = candidates.filter(c => q24Candidates.includes(c));
   if (finalCandidates.length === 0) finalCandidates = candidates;
+
   let modeKey;
   if (finalCandidates.length === 1) {
     modeKey = finalCandidates[0];
   } else {
-    // Signature matching
     let bestKey = finalCandidates[0], bestScore = -Infinity;
     for (const key of finalCandidates) {
       let score = 0;
       const sigs = SIGNATURES[key] || [];
-      for (const s of sigs) {
-        if (ans[s.q] === s.exp) score += s.w;
-      }
+      for (const s of sigs) { if (ans[s.q] === s.exp) score += s.w; }
       if (score > bestScore) { bestScore = score; bestKey = key; }
     }
     modeKey = bestKey;
   }
 
-  // Step 5: Dashboard
   const mode = MODES[modeKey];
   const driveScore = Math.round(Math.max(externalRaw, internalRaw) / 24 * 100);
-  const stressBase = Math.round((6 - m2Act) / 6 * 100); // more adaptive in stress = higher stress
+  const stressBase = Math.round((6 - m2Act) / 6 * 100);
   const relationScore = Math.round((ans.filter((a,i) => i>=12 && i<18 && (a==='A'||a==='C')).length / 6) * 100);
   const meaningScore = Math.round((ans.filter((a,i) => i>=18 && (a==='B'||a==='D')).length / 6) * 100);
 
-  // Blend with mode preset
   const dashboard = {
     drive: Math.round(mode.dashboard.drive * 0.7 + driveScore * 0.3),
     stress: Math.round(mode.dashboard.stress * 0.7 + stressBase * 0.3),
     relation: Math.round(mode.dashboard.relation * 0.7 + relationScore * 0.3),
     meaning: Math.round(mode.dashboard.meaning * 0.7 + meaningScore * 0.3)
   };
-
-  return { modeKey, mode, dashboard, scores: { externalRaw, internalRaw, activeScore, adaptiveScore, extRatio, actRatio } };
+  return { modeKey, mode, dashboard };
 }
 
 function calculateAndShow() {
   state.result = calculateResult();
   navigateTo('result');
-  setParticleTheme('result');
   renderResult();
-  // Dashboard animation triggers on next frame
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      animateGauges(state.result.dashboard);
-    });
+    requestAnimationFrame(() => { animateStats(state.result); });
   });
 }
 
-// ==================== RENDER RESULT ====================
+// ==================== RESULT RENDERING ====================
 function renderResult() {
   const { mode, dashboard } = state.result;
 
-  // Compact view
-  $resultCompact.innerHTML = `
-    <div class="mode-emoji">${mode.emoji}</div>
-    <h2 class="mode-name">${mode.name}<br><span class="mode-name-en">${mode.nameEn}</span></h2>
-    <p class="mode-tagline">${mode.tagline}</p>
-    <div class="dashboard">
-      ${renderGauge('动力值', dashboard.drive, 'var(--accent-gold)')}
-      ${renderGauge('压力值', dashboard.stress, 'var(--accent-coral)')}
-      ${renderGauge('关系值', dashboard.relation, 'var(--accent-cyan)')}
-      ${renderGauge('意义值', dashboard.meaning, 'var(--accent-green)')}
-    </div>
-    <div class="contradiction-card">
-      <h4>⚡ 当前阶段核心矛盾</h4>
-      <p>${mode.contradiction}</p>
-    </div>
-    <button class="btn-expand" id="btnExpand" onclick="toggleReport()">查看完整报告 ↓</button>
-  `;
+  // Stats row
+  document.getElementById('resultStats').innerHTML =
+    '<div class="result-stat"><div class="result-stat-num"><span class="plus">+</span><span id="gaugeDrive">0</span></div><div class="result-stat-label">动力值</div></div>'
+    + '<div class="result-stat"><div class="result-stat-num"><span class="plus">+</span><span id="gaugeStress">0</span></div><div class="result-stat-label">压力值</div></div>'
+    + '<div class="result-stat"><div class="result-stat-num"><span class="plus">+</span><span id="gaugeRelation">0</span></div><div class="result-stat-label">关系值</div></div>'
+    + '<div class="result-stat"><div class="result-stat-num"><span class="plus">+</span><span id="gaugeMeaning">0</span></div><div class="result-stat-label">意义值</div></div>';
+
+  // Heading
+  document.getElementById('resultEmoji').textContent = mode.emoji;
+  document.getElementById('resultName').textContent = mode.name;
+  document.getElementById('resultNameEn').textContent = mode.nameEn;
+  document.getElementById('resultTagline').textContent = mode.tagline;
+
+  // Contradiction
+  document.getElementById('resultContradiction').innerHTML =
+    '<h4>⚡ 当前阶段核心矛盾</h4><p>' + mode.contradiction + '</p>';
 
   // Full report
-  let spHtml = mode.superpowers.map(s => `
-    <div class="superpower-item">
-      <h4><span class="power-icon">${s.icon}</span>${s.title}</h4>
-      <p>${s.desc}</p>
-      <p class="highlight">▸ ${s.scene}</p>
-    </div>`).join('');
+  let spHtml = mode.superpowers.map(s =>
+    '<div class="superpower-item"><h4><span class="power-icon">' + s.icon + '</span>' + s.title + '</h4>'
+    + '<p>' + s.desc + '</p><p class="highlight">▸ ' + s.scene + '</p></div>').join('');
 
-  let trHtml = mode.traps.map(t => `
-    <div class="trap-item">
-      <h4><span class="trap-icon">${t.icon}</span>${t.title}</h4>
-      <p>${t.signal}</p>
-      <p>${t.consequence}</p>
-      <span class="signal-tag">⚠ ${t.warning}</span>
-    </div>`).join('');
+  let trHtml = mode.traps.map(t =>
+    '<div class="trap-item"><h4><span class="trap-icon">' + t.icon + '</span>' + t.title + '</h4>'
+    + '<p>' + t.signal + '</p><p>' + t.consequence + '</p>'
+    + '<span class="signal-tag">⚠ ' + t.warning + '</span></div>').join('');
 
-  let stHtml = mode.strategies.map(s => `
-    <div class="strategy-item">
-      <h4><span class="strategy-icon">${s.icon}</span>${s.title}</h4>
-      <p>${s.content}</p>
-      <span class="action-tag">📌 ${s.action}</span>
-    </div>`).join('');
+  let stHtml = mode.strategies.map(s =>
+    '<div class="strategy-item"><h4><span class="strategy-icon">' + s.icon + '</span>' + s.title + '</h4>'
+    + '<p>' + s.content + '</p><span class="action-tag">📌 ' + s.action + '</span></div>').join('');
 
-  let relHtml = `<table class="relation-table"><tr><th>与你互动的模式</th><th>可能的摩擦</th><th>协作建议</th></tr>
-    ${mode.relationships.map(r => `<tr><td>${r.mode}</td><td>${r.friction}</td><td>${r.advice}</td></tr>`).join('')}
-    </table>`;
+  let relHtml = '<table class="relation-table"><tr><th>与你互动的模式</th><th>可能的摩擦</th><th>协作建议</th></tr>'
+    + mode.relationships.map(r => '<tr><td>' + r.mode + '</td><td>' + r.friction + '</td><td>' + r.advice + '</td></tr>').join('')
+    + '</table>';
 
-  $resultFull.innerHTML = `
-    <div class="report-section"><h3>📋 模式画像</h3><p>${mode.profile}</p></div>
-    <div class="report-section"><h3>💎 你的职场超能力</h3>${spHtml}</div>
-    <div class="report-section"><h3>⚠ 你的职场陷阱</h3>${trHtml}</div>
-    <div class="report-section"><h3>🧭 生存策略</h3>${stHtml}</div>
-    <div class="report-section"><h3>🤝 你与其他模式的相处指南</h3>${relHtml}</div>
-    <div class="report-section"><h3>🔋 能量管理建议</h3><p>${mode.energyTip || '定期回顾你的能量仪表盘，关注四维平衡。'}</p></div>
-  `;
+  document.getElementById('resultFull').innerHTML =
+    '<div class="report-section"><h3>📋 模式画像</h3><p>' + mode.profile + '</p></div>'
+    + '<div class="report-section"><h3>💎 你的职场超能力</h3>' + spHtml + '</div>'
+    + '<div class="report-section"><h3>⚠ 你的职场陷阱</h3>' + trHtml + '</div>'
+    + '<div class="report-section"><h3>🧭 生存策略</h3>' + stHtml + '</div>'
+    + '<div class="report-section"><h3>🤝 你与其他模式的相处指南</h3>' + relHtml + '</div>'
+    + '<div class="report-section"><h3>🔋 能量管理建议</h3><p>' + (mode.energyTip || '定期回顾你的能量仪表盘，关注四维平衡。') + '</p></div>';
 }
 
-function renderGauge(label, value, color) {
-  const r = 26, circ = 2 * Math.PI * r;
-  return `<div class="gauge">
-    <div class="gauge-ring">
-      <svg viewBox="0 0 64 64"><circle class="gauge-bg" cx="32" cy="32" r="${r}"/><circle class="gauge-fill" cx="32" cy="32" r="${r}" stroke="${color}" stroke-dasharray="${circ}" style="stroke-dashoffset:${circ}" data-target="${value}"/></svg>
-      <span class="gauge-value" id="gaugeVal_${label}">0%</span>
-    </div>
-    <span class="gauge-label">${label}</span>
-  </div>`;
-}
-
-function animateGauges(dashboard) {
-  const fills = document.querySelectorAll('.gauge-fill');
-  const r = 26, circ = 2 * Math.PI * r;
+function animateStats(result) {
   const keys = ['drive','stress','relation','meaning'];
-  const labels = ['动力值','压力值','关系值','意义值'];
-  fills.forEach((fill, i) => {
-    const target = dashboard[keys[i]];
-    const offset = circ - (target / 100) * circ;
-    fill.style.strokeDashoffset = offset;
-    // Count-up number animation
-    const valEl = document.getElementById('gaugeVal_' + labels[i]);
-    if (valEl) {
-      const startVal = 0;
-      const duration = 1200;
-      const startTime = performance.now();
-      function countUp(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-        valEl.textContent = Math.round(startVal + (target - startVal) * eased) + '%';
-        if (progress < 1) requestAnimationFrame(countUp);
-      }
-      requestAnimationFrame(countUp);
+  const ids = ['gaugeDrive','gaugeStress','gaugeRelation','gaugeMeaning'];
+  keys.forEach((k, i) => {
+    const el = document.getElementById(ids[i]);
+    if (!el) return;
+    const target = result.dashboard[k];
+    const duration = 1200;
+    const startTime = performance.now();
+    function countUp(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased);
+      if (progress < 1) requestAnimationFrame(countUp);
     }
+    requestAnimationFrame(countUp);
   });
 }
 
 function toggleReport() {
-  const full = $resultFull;
+  const full = document.getElementById('resultFull');
   const btn = document.getElementById('btnExpand');
   if (full.classList.contains('expanded')) {
-    full.classList.remove('expanded');
-    full.classList.add('collapsed');
+    full.classList.remove('expanded'); full.classList.add('collapsed');
     btn.textContent = '查看完整报告 ↓';
   } else {
-    full.classList.remove('collapsed');
-    full.classList.add('expanded');
+    full.classList.remove('collapsed'); full.classList.add('expanded');
     btn.textContent = '收起完整报告 ↑';
     setTimeout(() => { full.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
   }
   state.reportExpanded = !state.reportExpanded;
 }
 
-// ==================== RESET ====================
-function resetQuiz() {
-  state.currentQ = 0;
-  state.answers = new Array(24).fill(null);
-  state.result = null;
-  state.reportExpanded = false;
-  $resultFull.classList.remove('expanded');
-  $resultFull.classList.add('collapsed');
-  // Reset screen animation
-  const compass = document.getElementById('screenCompass');
-  const inner = document.getElementById('screenInner');
-  if (compass) { compass.classList.remove('spinning','converging'); }
-  if (inner) { inner.classList.remove('burst'); }
-  navigateTo('start');
-  setParticleTheme('start');
-}
-
-// ==================== SAVE ====================
 function saveResult() {
   if (!state.result) return;
-  // Use print as save mechanism
   window.print();
 }
 
 // ==================== BOOT ====================
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded', () => {
+  navigateTo('start');
+});
 </script>
 </body>
 </html>
