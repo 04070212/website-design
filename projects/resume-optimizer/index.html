@@ -179,6 +179,40 @@ button{font-family:inherit;border:none;cursor:pointer;background:none;color:inhe
 .history-item .del-btn:hover{background:rgba(201,128,128,0.1)}
 .empty-state{text-align:center;padding:40px;color:var(--text-muted);font-size:15px}
 
+/* ===== Setup Hero ===== */
+.setup-hero{text-align:center;margin-bottom:28px}
+.setup-icon{font-size:56px;display:block;margin-bottom:16px}
+.setup-hero h2{font-size:24px;font-weight:700;margin-bottom:12px;
+  background:linear-gradient(135deg,var(--accent-purple),var(--accent-cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.setup-sub{font-size:14px;color:var(--text-secondary);line-height:1.7;max-width:460px;margin:0 auto}
+.setup-sub strong{color:var(--accent-cyan)}
+.setup-steps{margin:24px 0;display:flex;flex-direction:column;gap:10px}
+.step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary);padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border-subtle)}
+.step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:rgba(124,200,216,0.15);color:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.step a{color:var(--accent-cyan);text-decoration:underline}
+.btn-setup{width:100%;justify-content:center;padding:16px 32px;font-size:16px;margin-top:8px}
+
+/* ===== No-API Banner ===== */
+.no-api-banner{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 20px;margin-bottom:20px;
+  border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(201,184,120,0.08),rgba(201,160,184,0.05));
+  border:1px solid rgba(201,184,120,0.2);
+  flex-wrap:wrap;
+}
+.no-api-icon{font-size:32px;flex-shrink:0}
+.no-api-text{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px}
+.no-api-text strong{font-size:15px;color:var(--accent-gold)}
+.no-api-text span{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.no-api-banner .btn-sm{border-color:rgba(201,184,120,0.3);color:var(--accent-gold);white-space:nowrap}
+.no-api-banner .btn-sm:hover{background:rgba(201,184,120,0.1)}
+
+/* ===== Badges ===== */
+.badge-ok{border-color:rgba(126,184,158,0.3);color:var(--accent-green)}
+.badge-warn{border-color:rgba(201,184,120,0.3);color:var(--accent-gold)}
+
 /* ===== Scrollbar ===== */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -192,7 +226,7 @@ button{font-family:inherit;border:none;cursor:pointer;background:none;color:inhe
   <div class="topbar">
     <h1>📄 简历优化助手</h1>
     <div class="topbar-actions">
-      <span id="statusBadge" class="badge">🔑 已配置</span>
+      <span id="statusBadge" class="badge badge-ok">🔑 已配置</span>
       <button class="btn-sm" id="btnSettings" onclick="showSetup()">⚙️ 设置</button>
       <button class="btn-sm" id="btnHistory" onclick="toggleHistory()">📋 历史记录</button>
     </div>
@@ -201,16 +235,24 @@ button{font-family:inherit;border:none;cursor:pointer;background:none;color:inhe
   <!-- Setup Page -->
   <div id="setupSection" class="section">
     <div class="card api-form">
-      <h3>⚙️ API 配置</h3>
+      <div class="setup-hero">
+        <span class="setup-icon">🤖</span>
+        <h2>启用 AI 深度解读</h2>
+        <p class="setup-sub">粘贴你的 DeepSeek API Key 即可使用。密钥<strong>只存在你的浏览器里</strong>，直连 AI 服务器，不经过任何中转，零隐私风险。</p>
+      </div>
+      <div class="setup-steps">
+        <div class="step"><span class="step-num">1</span> 打开 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">platform.deepseek.com</a> 注册并创建 Key</div>
+        <div class="step"><span class="step-num">2</span> 充值任意金额（最低充值 1 元，每次优化花费约 0.01 元）</div>
+        <div class="step"><span class="step-num">3</span> 把 Key 粘贴到下方输入框</div>
+      </div>
       <div class="form-grid">
         <div class="field full">
-          <label>DeepSeek API 密钥</label>
-          <input type="password" id="apiKeyInput" placeholder="sk-...">
-          <div class="help-text">在 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" style="color:var(--accent-cyan)">platform.deepseek.com</a> 创建 Key，粘贴到这里。密钥只存本地，不会上传到任何服务器。</div>
+          <label>🔑 API 密钥</label>
+          <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
         </div>
       </div>
-      <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
-      <button class="btn-sm" onclick="toggleAdvanced()" style="margin-top:16px;font-size:12px;color:var(--text-muted)">🔧 高级设置（自建 API）</button>
+      <button class="btn btn-primary btn-setup" onclick="saveConfig()">🚀 保存并开始使用</button>
+      <button class="btn-sm" onclick="toggleAdvanced()" style="margin-top:12px;font-size:12px;color:var(--text-muted)">🔧 高级设置（自建 API / 自定义模型）</button>
       <div id="advancedFields" style="display:none;margin-top:16px">
         <div class="form-grid">
           <div class="field full">
@@ -228,6 +270,15 @@ button{font-family:inherit;border:none;cursor:pointer;background:none;color:inhe
 
   <!-- Main Page -->
   <div id="mainSection" class="section">
+    <!-- API Unconfigured Banner -->
+    <div id="noApiBanner" class="no-api-banner" style="display:none">
+      <div class="no-api-icon">🔑</div>
+      <div class="no-api-text">
+        <strong>尚未配置 API 密钥</strong>
+        <span>粘贴 DeepSeek Key 即可启用 AI 深度优化。密钥仅存本地浏览器，直连 AI 不经过任何服务器。</span>
+      </div>
+      <button class="btn btn-sm" onclick="showSetup()">立即配置 →</button>
+    </div>
     <!-- Input -->
     <div class="card">
       <h3>📝 简历内容</h3>
@@ -336,6 +387,8 @@ function saveConfig() {
 
   saveConfigToLS(config);
   document.getElementById('statusBadge').textContent = '🔑 已配置';
+  document.getElementById('statusBadge').className = 'badge badge-ok';
+  document.getElementById('noApiBanner').style.display = 'none';
   showMain();
 }
 
@@ -704,9 +757,13 @@ function escHtml(s) {
 
   if (config.apiKey) {
     document.getElementById('statusBadge').textContent = '🔑 已配置';
+    document.getElementById('statusBadge').className = 'badge badge-ok';
+    document.getElementById('noApiBanner').style.display = 'none';
     showMain();
   } else {
     document.getElementById('statusBadge').textContent = '⚠ 未配置';
+    document.getElementById('statusBadge').className = 'badge badge-warn';
+    document.getElementById('noApiBanner').style.display = 'flex';
     showSetup();
   }
 })();
