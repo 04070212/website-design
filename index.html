@@ -478,6 +478,7 @@ button{font-family:inherit;border:none;cursor:pointer;background:none;color:inhe
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 // ================================================================
 // LANDMARK DATA
@@ -1167,8 +1168,11 @@ function initThreeJS() {
   });
 
   // Load GLB model (replaces fallback when ready)
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load('character-final.glb',
+  gltfLoader.setDRACOLoader(dracoLoader);
+  gltfLoader.load('character-compressed.glb',
     (gltf) => {
       const model = gltf.scene;
       charGroup.remove(fallbackGroup);
@@ -1449,6 +1453,12 @@ function initThreeJS() {
     const gRing = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.55, 24), new THREE.MeshBasicMaterial({ color: '#FFAA66', side: THREE.DoubleSide, transparent: true, opacity: 0.18, depthWrite: false }));
     gRing.rotation.x = -Math.PI / 2; gRing.position.y = 0.02;
     group.add(gRing);
+
+    // Invisible hitbox — wider click area covering building + icon + label
+    const hitbox = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, 4.5, 8), new THREE.MeshBasicMaterial({ visible: false }));
+    hitbox.position.y = 2.2;
+    hitbox.name = 'lmHitbox';
+    group.add(hitbox);
 
     group.position.set(x, h, z);
     group.userData = { id: data.id, landmarkData: data, hover: 0, baseY: h, building, glowRing: gRing };
