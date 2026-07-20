@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 小红书图标：圆角方形红色背景 + 白字"小红书"字样 -->
+  <rect width="1024" height="1024" rx="240" ry="240" fill="#FF2442"/>
+  <text x="512" y="600" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="300" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="20">小红书</text>
+</svg>
